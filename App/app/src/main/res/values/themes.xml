@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SmartAccess.Base" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/launch_screen_background</item>
+    </style>
+
+    <style name="Theme.SmartAccess" parent="Theme.SmartAccess.Base" />
+</resources>

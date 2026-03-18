@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: intelligent-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+      - NEXT_PUBLIC_FACE_RECOGNITION_URL=${NEXT_PUBLIC_FACE_RECOGNITION_URL:-http://localhost:8080}
+    command: npm run dev
+    restart: unless-stopped
+    networks:
+      - intelligent-network
+
+networks:
+  intelligent-network:
+    driver: bridge

@@ -1,0 +1,119 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: intelligent-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=backend_intelligent_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - intelligent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend-intelligent
+      dockerfile: Dockerfile
+    container_name: intelligent-backend
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend-intelligent:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-dev-key-change-in-production
+      - DB_NAME=backend_intelligent_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://frontend:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - intelligent-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/admin/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Face Recognition Service
+  face-recognition:
+    image: kbyai/face-recognition:latest
+    container_name: intelligent-face-recognition
+    ports:
+      - "8080:8080"
+    volumes:
+      - face_data:/app/data
+      - face_uploads:/app/uploads
+    environment:
+      - PORT=8080
+      - LOG_LEVEL=info
+    networks:
+      - intelligent-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend-intelligent
+      dockerfile: Dockerfile.dev
+    container_name: intelligent-frontend
+    volumes:
+      - ./frontend-intelligent:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - NEXT_PUBLIC_FACE_RECOGNITION_URL=http://localhost:8080
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+      - face-recognition
+    networks:
+      - intelligent-network
+    command: npm run dev -- --webpack -H 0.0.0.0
+
+volumes:
+  postgres_data:
+    driver: local
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
+  face_data:
+    driver: local
+  face_uploads:
+    driver: local
+
+networks:
+  intelligent-network:
+    driver: bridge

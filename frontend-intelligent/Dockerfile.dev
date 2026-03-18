@@ -1,0 +1,28 @@
+# Dockerfile for Development
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for development
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Don't copy source code - it will be mounted via volume
+# This allows hot-reload to work properly
+
+# Expose the development port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WATCHPACK_POLLING=true
+ENV CHOKIDAR_USEPOLLING=true
+
+# Start the development server with webpack (Turbopack doesn't support polling in Docker)
+CMD ["npm", "run", "dev", "--", "--webpack", "-H", "0.0.0.0"]
