@@ -1,0 +1,39 @@
+.admin-hero {
+    margin-bottom: 1.5rem;
+}
+
+.admin-grid {
+    align-items: start;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.admin-form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.import-box {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.import-help {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.auth-feedback {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

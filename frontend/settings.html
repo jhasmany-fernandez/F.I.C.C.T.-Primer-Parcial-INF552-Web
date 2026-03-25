@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Administrador - Smart Access</title>
+    <script>
+        if (localStorage.getItem("daynight-theme") === "carbon") {
+            document.documentElement.classList.add("carbon");
+        }
+    </script>
+    <link rel="stylesheet" href="templatemo-daynight-style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="settings.html" class="logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2 3 6.5V12c0 5.1 3.4 9.76 9 11 5.6-1.24 9-5.9 9-11V6.5z"/>
+                            </svg>
+                        </div>
+                        Perfil Administrador
+                    </a>
+                    <div class="nav-menu">
+                        <div class="nav-item"><a href="index.html" class="nav-link">Dashboard</a></div>
+                        <div class="nav-item"><a href="login.html" class="nav-link">Validación facial</a></div>
+                        <div class="nav-item"><a href="settings.html" class="nav-link active">Perfil</a></div>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <div class="theme-toggle">
+                        <button class="theme-btn theme-btn-snow active" onclick="setTheme('snow')" title="Snow Edition"></button>
+                        <button class="theme-btn theme-btn-carbon" onclick="setTheme('carbon')" title="Carbon Edition"></button>
+                    </div>
+                    <button class="user-menu">
+                        <div class="user-avatar">A</div>
+                        <span class="user-name">Administrador</span>
+                    </button>
+                    <a href="login.html" class="btn-logout" title="Cerrar sesión">Salir</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section class="dashboard-hero admin-hero">
+                <div class="dashboard-hero-copy">
+                    <span class="hero-chip">Perfil y gestión administrativa</span>
+                    <h1 class="dashboard-hero-title">Toda la información y control del administrador en un solo panel.</h1>
+                    <p class="dashboard-hero-text">Esta vista reemplaza el panel aislado y concentra perfil, usuarios, importación y accesos.</p>
+                    <div class="dashboard-hero-actions">
+                        <a href="#userFormCard" class="btn btn-primary">Registrar usuario</a>
+                        <a href="#accessLogsCard" class="btn btn-secondary">Ver accesos</a>
+                    </div>
+                </div>
+                <div class="dashboard-hero-panel">
+                    <div class="hero-panel-head">
+                        <span class="badge badge-blue">Estado administrativo</span>
+                        <strong id="adminStatusText">Cargando panel...</strong>
+                    </div>
+                    <div class="hero-panel-grid">
+                        <div class="hero-mini-card"><span>Backend</span><strong id="backendStatus">...</strong></div>
+                        <div class="hero-mini-card"><span>PostgreSQL</span><strong id="databaseStatus">...</strong></div>
+                        <div class="hero-mini-card"><span>Servicio facial</span><strong id="faceServiceStatus">...</strong></div>
+                        <div class="hero-mini-card"><span>Usuarios</span><strong id="usersCount">0</strong></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <article class="stat-card"><div class="stat-label">Accesos registrados</div><div class="stat-value" id="accessLogsCount">0</div><div class="stat-change positive">Eventos auditables</div></article>
+                <article class="stat-card"><div class="stat-label">Último usuario</div><div class="stat-value stat-compact" id="latestUser">Sin datos</div><div class="stat-change positive">Alta reciente</div></article>
+                <article class="stat-card"><div class="stat-label">Último acceso</div><div class="stat-value stat-compact" id="latestAccess">Sin datos</div><div class="stat-change positive">Actividad reciente</div></article>
+                <article class="stat-card"><div class="stat-label">Importación Excel</div><div class="stat-value stat-compact" id="pendingImportCount">0</div><div class="stat-change positive">Filas pendientes</div></article>
+            </section>
+
+            <section class="two-col dashboard-grid admin-grid">
+                <article class="card" id="userFormCard">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Alta manual de usuario</h2>
+                            <p class="card-subtitle">Registro individual para cuentas operativas o administrativas.</p>
+                        </div>
+                    </div>
+                    <div class="auth-success auth-feedback is-hidden" id="adminFeedback">
+                        <strong id="adminFeedbackTitle">Panel listo</strong>
+                        <p id="adminFeedbackMessage">Todavía no se realizó ninguna operación administrativa.</p>
+                    </div>
+                    <form id="adminUserForm" class="admin-form-grid">
+                        <input class="form-input" type="text" id="ciInput" placeholder="C.I.">
+                        <input class="form-input" type="text" id="registroInput" placeholder="Número de registro">
+                        <input class="form-input" type="text" id="nombreInput" placeholder="Nombre">
+                        <input class="form-input" type="text" id="apellidoInput" placeholder="Apellido">
+                        <input class="form-input" type="email" id="correoInput" placeholder="Correo institucional">
+                        <select class="form-input" id="rolInput">
+                            <option value="Administrador">Administrador</option>
+                            <option value="Portero">Portero</option>
+                            <option value="Docente">Docente</option>
+                            <option value="Alumno">Alumno</option>
+                            <option value="Encargado de laboratorio">Encargado de laboratorio</option>
+                        </select>
+                        <select class="form-input" id="estadoInput">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                        <input class="form-input" type="password" id="passwordInput" placeholder="Contraseña inicial">
+                        <div class="admin-form-actions"><button type="submit" class="btn btn-primary">Registrar usuario</button></div>
+                    </form>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Importación masiva</h2>
+                            <p class="card-subtitle">Carga desde Excel y persistencia controlada.</p>
+                        </div>
+                    </div>
+                    <div class="import-box">
+                        <input class="form-input" type="file" id="excelFileInput" accept=".xlsx,.xls">
+                        <button type="button" class="btn btn-secondary" id="saveImportedBtn">Guardar importados</button>
+                        <p class="import-help">Carga un Excel, revísalo en la tabla y decide cuándo persistirlo.</p>
+                    </div>
+                </article>
+            </section>
+
+            <section class="two-col dashboard-grid admin-grid">
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Usuarios recientes</h2>
+                            <p class="card-subtitle">Vista resumida de cuentas registradas.</p>
+                        </div>
+                    </div>
+                    <div class="roster-list" id="usersRoster">
+                        <div class="roster-item"><strong>Cargando usuarios...</strong><span>Conectando con PostgreSQL</span></div>
+                    </div>
+                </article>
+                <article class="card" id="accessLogsCard">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Accesos recientes</h2>
+                            <p class="card-subtitle">Bitácora operativa para auditoría.</p>
+                        </div>
+                    </div>
+                    <div class="activity-feed" id="accessFeed">
+                        <div class="activity-item"><div class="activity-icon blue">...</div><div class="activity-content"><div class="activity-text">Cargando accesos...</div><div class="activity-time">Espera un momento</div></div></div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Tabla administrativa de usuarios</h2>
+                        <p class="card-subtitle">Consulta, importación y actualización de credenciales.</p>
+                    </div>
+                    <span class="badge badge-green" id="usersGridCount">0 filas</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>N</th><th>Nombre</th><th>Apellido</th><th>Registro</th><th>Correo</th><th>Rol</th><th>Estado</th><th style="width:92px;text-align:center;">Opciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersGridBody">
+                            <tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">Cargando usuarios...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Smart Access. Perfil del administrador con control total del módulo web.</p>
+        </footer>
+    </div>
+
+    <script src="templatemo-daynight-script.js"></script>
+    <script type="module" src="register-user.js"></script>
+</body>
+</html>

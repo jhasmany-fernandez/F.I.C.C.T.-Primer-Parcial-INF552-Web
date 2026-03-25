@@ -1,397 +1,162 @@
 # Proyecto Intelligent
 
-Dashboard Administrativo Full-Stack con Reconocimiento Facial IA
+Proyecto académico con app Android, frontend web, backend Node.js y servicio de reconocimiento facial.
 
-## 🚀 Inicio Rápido
+## Estructura Principal
 
-### Configuración Inicial
+- `App/`: aplicación Android
+- `frontend/`: frontend web estático
+- `backend/`: servidor Node.js que sirve el frontend y expone `POST /login-face`
+- `face-recognition-service/`: servicio Python para búsqueda y validación facial
 
-**IMPORTANTE: Antes de empezar, copia las variables de entorno:**
+## Arquitectura MVC
 
-```bash
-# Copiar archivo de ejemplo a .env
-cp .env.example .env
+El proyecto se organiza bajo el patrón MVC tanto en móvil como en la parte web activa.
 
-# Edita el archivo .env y cambia las credenciales por defecto
-# NUNCA subas el archivo .env a GitHub
-```
+### MVC en la app móvil Android
 
-### Opción 1: Levantar Todo con Docker (Recomendado)
+#### Model
 
-**Windows:**
-```bash
-start-project.bat
-```
+Representa estados, entidades y estructuras de datos de la app:
 
-**Linux/Mac:**
-```bash
-chmod +x start-project.sh
-./start-project.sh
-```
+- `App/app/src/main/java/com/uagrm/smartaccess/model/AppScreen.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/model/LoginFormState.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/model/DashboardActionModel.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/model/EntryMethodModel.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/model/ReportModels.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/model/AdminProfileModels.kt`
 
-### Opción 2: Docker Compose Manual
+#### View
 
-```bash
-# Copiar variables de entorno
-cp .env.example .env
-cp frontend-intelligent/.env.example frontend-intelligent/.env
+Está compuesta por las pantallas Jetpack Compose, responsables de renderizar la interfaz:
 
-# Levantar todos los servicios
-docker-compose up -d
+- `App/app/src/main/java/com/uagrm/smartaccess/MainActivity.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/ui/dashboard/AccessDashboardScreen.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/ui/entry/ClassroomEntryScreen.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/ui/report/ReportObjectsScreen.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/ui/profile/AdminProfileScreen.kt`
 
-# Ver logs
-docker-compose logs -f
-```
+#### Controller
 
-## 📋 Acceso a los Servicios
+Gestiona navegación, eventos de usuario, lógica de interfaz y comunicación con backend:
 
-Una vez levantado el proyecto:
+- `App/app/src/main/java/com/uagrm/smartaccess/controller/AppController.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/controller/LoginController.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/controller/EntryController.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/controller/ReportController.kt`
+- `App/app/src/main/java/com/uagrm/smartaccess/controller/AdminProfileController.kt`
 
-| Servicio | URL | Descripción |
-|----------|-----|-------------|
-| **Frontend** | http://localhost:3000 | Dashboard Next.js |
-| **Backend** | http://localhost:8000 | API Django |
-| **Admin Panel** | http://localhost:8000/admin | Django Admin |
-| **API Docs** | http://localhost:8000/swagger | Swagger UI |
-| **Face Recognition** | http://localhost:8080 | API de IA |
+### MVC en la parte web
 
-## 🏗️ Arquitectura
+#### View
 
-```
-Proyecto-intelligent/
-├── frontend-intelligent/        # Next.js 16 + React 19 + TypeScript
-│   ├── src/
-│   │   ├── app/                # App Router (Next.js)
-│   │   ├── components/         # Componentes React
-│   │   │   ├── Auth/          # Autenticación y Face Scanner
-│   │   │   ├── Charts/        # Gráficos y visualizaciones
-│   │   │   └── FormElements/  # Componentes de formularios
-│   │   ├── services/          # API Services (authService, etc.)
-│   │   └── types/             # TypeScript Types
-│   └── DOCKER.md              # Docs de Docker del frontend
-│
-├── backend-intelligent/        # Django 5.0 + Django REST Framework
-│   ├── backend_intelligent/   # Configuración Django
-│   ├── apps/                  # Django Apps (auth, users, etc.)
-│   │   ├── authentication/    # Autenticación con facial recognition
-│   │   └── users/            # Gestión de usuarios
-│   └── requirements/          # Python Dependencies
-│
-├── face-recognition-service/  # 🔥 Servicio de IA en uso (DeepFace)
-│   ├── app.py                # API Flask con DeepFace
-│   ├── requirements.txt      # deepface, scikit-learn, etc.
-│   ├── Dockerfile            # Configuración Docker
-│   └── face_data/            # Storage de embeddings faciales
-│
-├── docker-compose.yml         # Orquestación de todos los servicios
-├── .gitignore                # Archivos ignorados por Git
-├── .env.example              # Template de variables de entorno
-└── README.md                 # Este archivo
-```
+La vista web está formada por páginas HTML estáticas:
 
-## 🛠️ Stack Tecnológico
+- `frontend/login.html`
+- `frontend/index.html`
+- `frontend/settings.html`
+- `frontend/register-user.html`
 
-### Frontend
-- **Framework:** Next.js 16.0.10
-- **UI:** React 19.2.0 + TypeScript
-- **Estilos:** Tailwind CSS 3.4.16
-- **Gráficos:** ApexCharts 4.5.0
-- **Temas:** Light/Dark mode con next-themes
+#### Controller
 
-### Backend
-- **Framework:** Django 5.0.1
-- **API:** Django REST Framework 3.14.0
-- **Base de datos:** PostgreSQL 16
-- **Auth:** JWT (Simple JWT)
-- **Docs:** Swagger/OpenAPI (drf-yasg)
+Los controladores web coordinan eventos y consumo de la API:
 
-### IA/ML
-- **Face Recognition:** Servicio personalizado con DeepFace + Facenet512
-- **Framework:** Flask + DeepFace
-- **Modelo:** Facenet512 (512-dimensional embeddings)
-- **Similitud:** Cosine similarity con scikit-learn
-- **Features:** Registro, búsqueda, y eliminación de rostros
+- `frontend/login.js`
+- `frontend/dashboard.js`
+- `frontend/register-user.js`
+- `frontend/js/login/loginController.js`
+- `frontend/js/dashboard/dashboardController.js`
+- `frontend/js/admin/adminController.js`
 
-### DevOps
-- **Containerización:** Docker + Docker Compose
-- **Hot Reload:** Habilitado en desarrollo
-- **Health Checks:** Configurados en todos los servicios
+#### Model
 
-## 📊 Servicios en Detalle
+Los modelos web encapsulan acceso a datos o respuestas del backend:
 
-### 1. Frontend (Port 3000)
-- Dashboard administrativo completo
-- 100+ componentes React reutilizables
-- Gráficos interactivos
-- Autenticación con Google
-- Tema claro/oscuro
-- Responsive design
+- `frontend/js/login/loginModel.js`
+- `frontend/js/dashboard/dashboardModel.js`
+- `frontend/js/admin/adminModel.js`
 
-### 2. Backend (Port 8000)
-- API REST completa
-- Autenticación JWT
-- Panel de administración Django
-- Documentación automática (Swagger/ReDoc)
-- CORS configurado para desarrollo
+### MVC en el backend Node.js
 
-### 3. Base de Datos (Port 5432)
-- PostgreSQL 16 Alpine
-- Datos persistentes en volúmenes Docker
-- Migraciones automáticas al iniciar
+El backend también está separado por responsabilidades siguiendo MVC ligero:
 
-### 4. Face Recognition (Port 8080)
-- Detección de rostros
-- Reconocimiento facial
-- Verificación de identidad
-- Registro de usuarios por biometría
+#### Controllers
 
-## 🎯 Características Principales
+- `backend/controllers/healthController.js`
+- `backend/controllers/authController.js`
+- `backend/controllers/userController.js`
+- `backend/controllers/accessLogController.js`
 
-### Frontend
-- ✅ Dashboard con métricas en tiempo real
-- ✅ Gráficos interactivos (4+ tipos)
-- ✅ Tablas de datos con filtros
-- ✅ Formularios completos con validación
-- ✅ Calendario integrado
-- ✅ Perfil de usuario
-- ✅ Configuraciones
-- ✅ Sistema de autenticación
-- ✅ Face scanner component
+#### Models
 
-### Backend
-- ✅ API REST con DRF
-- ✅ JWT Authentication
-- ✅ PostgreSQL database
-- ✅ Swagger/ReDoc docs
-- ✅ CORS support
-- ✅ Admin panel
-- ✅ Media & static files
+- `backend/models/databaseModel.js`
+- `backend/models/userModel.js`
+- `backend/models/accessLogModel.js`
 
-### DevOps
-- ✅ Docker multi-stage builds
-- ✅ Docker Compose orquestación
-- ✅ Hot reload en desarrollo
-- ✅ Health checks
-- ✅ Variables de entorno
-- ✅ Volúmenes persistentes
+#### Views
 
-## 📝 Comandos Esenciales
+Las vistas del backend corresponden a serialización de respuestas y entrega de archivos:
 
-### Gestión General
-```bash
-# Ver estado de servicios
-docker-compose ps
-./check-status.sh  # o check-status.bat en Windows
+- `backend/views/jsonView.js`
+- `backend/views/userView.js`
+- `backend/views/staticView.js`
 
-# Ver logs
-docker-compose logs -f
+#### Services y Utils
 
-# Detener servicios
-docker-compose down
+Se usan como capa auxiliar para lógica reutilizable:
 
-# Reiniciar servicios
-docker-compose restart
-```
+- `backend/services/faceRecognitionService.js`
+- `backend/services/userService.js`
+- `backend/utils/httpUtils.js`
+- `backend/utils/valueUtils.js`
 
-### Comandos Django
-```bash
-# Crear superusuario
-docker exec -it intelligent-backend python manage.py createsuperuser
+## Flujo General
 
-# Ejecutar migraciones
-docker exec -it intelligent-backend python manage.py migrate
+1. El frontend web captura la imagen del usuario.
+2. El backend Node.js recibe la imagen en `POST /login-face`.
+3. El backend reenvía la imagen al servicio `face-recognition-service`.
+4. El servicio facial responde con la coincidencia encontrada.
 
-# Shell de Django
-docker exec -it intelligent-backend python manage.py shell
-```
+## Ejecución Básica
 
-### Desarrollo
-```bash
-# Reconstruir después de cambios
-docker-compose up --build
-
-# Acceder al shell del contenedor
-docker exec -it intelligent-frontend sh
-docker exec -it intelligent-backend sh
-```
-
-## 🔧 Configuración
-
-### Variables de Entorno
-
-**Raíz (.env):**
-```env
-POSTGRES_DB=backend_intelligent_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DEBUG=True
-SECRET_KEY=your-secret-key
-```
-
-**Frontend (.env):**
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-NEXT_PUBLIC_FACE_RECOGNITION_URL=http://localhost:8080
-```
-
-## 📖 Documentación Adicional
-
-- **[QUICK-START.md](./QUICK-START.md)** - Guía rápida de inicio
-- **[README-DOCKER.md](./README-DOCKER.md)** - Documentación completa de Docker
-- **[frontend-intelligent/DOCKER.md](./frontend-intelligent/DOCKER.md)** - Docker del frontend
-- **[backend-intelligent/README.md](./backend-intelligent/README.md)** - Docs del backend
-
-## 🐛 Solución de Problemas
-
-### Puerto ya en uso
-```bash
-# Cambiar puerto en docker-compose.yml
-ports:
-  - "3001:3000"  # Cambiar 3000 a otro puerto
-```
-
-### Base de datos no conecta
-```bash
-docker-compose logs db
-docker-compose restart db
-```
-
-### Frontend no carga
-```bash
-docker-compose logs frontend
-docker-compose restart frontend
-```
-
-### Empezar de cero
-```bash
-docker-compose down -v
-docker-compose up --build
-```
-
-## 📤 Preparar para GitHub
-
-### ⚠️ Remover Archivos Sensibles del Tracking
-
-Si ya subiste archivos sensibles a Git (como `.env`), necesitas removerlos:
+### Backend web
 
 ```bash
-# Remover .env del tracking de Git (sin eliminarlo del disco)
-git rm --cached .env
-
-# Remover otros archivos sensibles si es necesario
-git rm --cached -r node_modules/ 2>/dev/null
-git rm --cached -r .next/ 2>/dev/null
-git rm --cached -r __pycache__/ 2>/dev/null
-
-# Commit los cambios
-git add .gitignore
-git commit -m "Remove sensitive files and update .gitignore"
+cd backend
+node server.js
 ```
 
-### ✅ Verificar que todo esté listo
+### Servicio de reconocimiento facial
 
 ```bash
-# Verificar que .gitignore funciona correctamente
+cd face-recognition-service
+pip install -r requirements.txt
+python app.py
+```
+
+### App Android
+
+Abre `App/` en Android Studio y ejecuta la aplicación desde ahí.
+
+### Importante para pruebas desde celular físico
+
+La app móvil administrativa consume el backend usando la IP local de la computadora.
+
+- Si pruebas desde emulador, normalmente se usa `10.0.2.2`.
+- Si pruebas desde un teléfono físico, debes usar la IP local real de tu PC en la misma red Wi-Fi.
+- El puerto `8081` debe estar permitido en el Firewall de Windows.
+
+## Notas
+
+- El frontend principal está en `frontend/`, no en frameworks adicionales.
+- El backend principal está en `backend/`, no en Django.
+- El reconocimiento facial real vive en `face-recognition-service/`.
+- La web puede usarse como interfaz administrativa, mientras que la app móvil concentra vistas operativas y administración móvil.
+
+## Git
+
+Antes de subir cambios, verifica que no se incluyan archivos sensibles:
+
+```bash
 git status
-
-# Los siguientes archivos/carpetas NO deben aparecer:
-# - .env
-# - node_modules/
-# - .next/
-# - __pycache__/
-# - face_data/
-# - *.pyc
-
-# Si ves archivos que deberían estar ignorados
-git check-ignore -v <archivo>  # Ver si está en .gitignore
 ```
-
-### 📝 Antes de Push
-
-**Checklist antes de subir a GitHub:**
-
-- [ ] Archivo `.env` NO está en el repositorio
-- [ ] Variables sensibles reemplazadas en `.env.example`
-- [ ] `node_modules/` está ignorado
-- [ ] `face_data/` está ignorado
-- [ ] `.gitignore` está actualizado
-- [ ] README.md está completo
-- [ ] Credenciales de base de datos NO están hardcodeadas
-
-```bash
-# Hacer commit y push
-git add .
-git commit -m "Initial commit: Full-stack dashboard with facial recognition"
-git push origin main
-```
-
-## 🎓 Estado del Proyecto
-
-### ✅ Completado
-- ✅ Estructura del proyecto
-- ✅ Configuración de Docker multi-container
-- ✅ Frontend UI completo con 100+ componentes
-- ✅ Sistema de autenticación con JWT
-- ✅ Backend Django con REST API
-- ✅ Modelos de usuario y autenticación
-- ✅ Base de datos PostgreSQL configurada
-- ✅ **Servicio de reconocimiento facial con DeepFace**
-- ✅ **Registro de usuarios con reconocimiento facial**
-- ✅ **Login con contraseña y reconocimiento facial**
-- ✅ **FaceScanner component con control de cámara**
-- ✅ **Funcionalidad "Mantener sesión"**
-- ✅ **Mostrar/ocultar contraseñas**
-- ✅ Integración frontend-backend completa
-- ✅ Documentación completa
-- ✅ .gitignore configurado
-
-### ⚠️ En Desarrollo
-- Dashboard con datos reales (actualmente con datos mock)
-- Sistema de permisos y roles
-- Tests unitarios y de integración
-- CI/CD pipeline
-
-### 📋 Próximos Pasos
-1. Conectar dashboard con datos reales del backend
-2. Implementar sistema de roles y permisos
-3. Agregar tests unitarios y e2e
-4. Implementar CI/CD con GitHub Actions
-5. Configurar entorno de producción
-6. Implementar analytics y monitoreo
-
-## 🤝 Contribuir
-
-Este es un proyecto de portafolio en desarrollo. Para contribuir:
-
-1. Fork el proyecto
-2. Crea una rama feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto es privado y con fines educativos/portafolio.
-
-## 👤 Autor
-
-**Tu Nombre**
-- Portfolio: [tu-portfolio.com]
-- GitHub: [@tu-usuario]
-
-## 🙏 Agradecimientos
-
-- Next.js Team
-- Django Team
-- TailwindLabs
-- KBY-AI (Face Recognition)
-
----
-
-**Nota:** Este proyecto está en modo desarrollo. Para producción, asegúrate de:
-- Cambiar `DEBUG=False`
-- Usar `SECRET_KEY` seguro
-- Configurar HTTPS
-- Actualizar CORS y ALLOWED_HOSTS
-- Usar Gunicorn en producción
-- Configurar backups de base de datos

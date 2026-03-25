@@ -1,1 +1,0 @@
-# Backend Intelligent - Django Project

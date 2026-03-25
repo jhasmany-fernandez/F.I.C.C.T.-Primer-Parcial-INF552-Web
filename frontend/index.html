@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FICCT Smart Access</title>
+    <script>
+        if (localStorage.getItem("daynight-theme") === "carbon") {
+            document.documentElement.classList.add("carbon");
+        }
+    </script>
+    <link rel="stylesheet" href="templatemo-daynight-style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="mobile-menu-overlay"></div>
+
+    <div class="mobile-menu">
+        <div class="mobile-menu-header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2 3 6.5V12c0 5.1 3.4 9.76 9 11 5.6-1.24 9-5.9 9-11V6.5z"/>
+                    </svg>
+                </div>
+                Smart Access
+            </a>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-menu-nav">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="register-user.html">Registrar usuario</a>
+            <a href="analytics.html">Analítica</a>
+            <a href="settings.html">Configuración</a>
+        </nav>
+        <div class="mobile-menu-footer">
+            <a href="login.html" class="mobile-logout-btn">Cerrar sesión</a>
+            <div class="theme-toggle">
+                <button class="theme-btn theme-btn-snow active" onclick="setTheme('snow')" title="Snow Edition">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <button class="theme-btn theme-btn-carbon" onclick="setTheme('carbon')" title="Carbon Edition">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="index.html" class="logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2 3 6.5V12c0 5.1 3.4 9.76 9 11 5.6-1.24 9-5.9 9-11V6.5z"/>
+                            </svg>
+                        </div>
+                        Smart Access
+                    </a>
+                    <div class="nav-menu">
+                        <div class="nav-item">
+                            <a href="index.html" class="nav-link active">Dashboard</a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="register-user.html" class="nav-link">Registrar usuario</a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="analytics.html" class="nav-link">Analítica</a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="settings.html" class="nav-link">Configuración</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <div class="theme-toggle">
+                        <button class="theme-btn theme-btn-snow active" onclick="setTheme('snow')" title="Snow Edition">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"/>
+                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </button>
+                        <button class="theme-btn theme-btn-carbon" onclick="setTheme('carbon')" title="Carbon Edition">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="user-menu">
+                        <div class="user-avatar">F</div>
+                        <span class="user-name">FICCT</span>
+                    </button>
+                    <a href="login.html" class="btn-logout" title="Cerrar sesión">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </a>
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section class="dashboard-hero">
+                <div class="dashboard-hero-copy">
+                    <span class="hero-chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2 4 5v6c0 5.25 3.4 10.08 8 11 4.6-.92 8-5.75 8-11V5z"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                        Centro de control FICCT
+                    </span>
+                    <h1 class="dashboard-hero-title">Monitoreo de accesos, usuarios y validación facial en una sola vista.</h1>
+                    <p class="dashboard-hero-text">
+                        Este panel resume el estado del backend, la base de datos PostgreSQL y la actividad reciente del sistema Smart Access.
+                    </p>
+                    <div class="dashboard-hero-actions">
+                        <a href="register-user.html" class="btn btn-primary">Registrar usuario</a>
+                        <a href="login.html" class="btn btn-secondary">Ir a validación facial</a>
+                    </div>
+                </div>
+                <div class="dashboard-hero-panel">
+                    <div class="hero-panel-head">
+                        <span class="badge badge-blue">Estado operativo</span>
+                        <strong id="heroStatusText">Cargando servicios...</strong>
+                    </div>
+                    <div class="hero-panel-grid">
+                        <div class="hero-mini-card">
+                            <span>Backend</span>
+                            <strong id="backendStatus">...</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>PostgreSQL</span>
+                            <strong id="databaseStatus">...</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>Servicio facial</span>
+                            <strong id="faceServiceStatus">...</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>Puerto web</span>
+                            <strong>8081</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <article class="stat-card">
+                    <div class="stat-label">Usuarios registrados</div>
+                    <div class="stat-value" id="usersCount">0</div>
+                    <div class="stat-change positive">Registros persistidos en PostgreSQL</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-label">Accesos recientes</div>
+                    <div class="stat-value" id="accessLogsCount">0</div>
+                    <div class="stat-change positive">Bitácora disponible para auditoría</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-label">Último usuario</div>
+                    <div class="stat-value stat-compact" id="latestUser">Sin datos</div>
+                    <div class="stat-change positive">Alta más reciente del sistema</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-label">Último acceso</div>
+                    <div class="stat-value stat-compact" id="latestAccess">Sin datos</div>
+                    <div class="stat-change positive">Verificación facial o intento reciente</div>
+                </article>
+            </section>
+
+            <section class="two-col dashboard-grid">
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Flujo operativo</h2>
+                            <p class="card-subtitle">Cómo circula la información en el sistema</p>
+                        </div>
+                    </div>
+                    <div class="flow-list">
+                        <div class="flow-step">
+                            <span class="flow-index">01</span>
+                            <div>
+                                <strong>Registro de usuarios</strong>
+                                <p>El frontend registra personas y el backend guarda su información en PostgreSQL.</p>
+                            </div>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-index">02</span>
+                            <div>
+                                <strong>Validación facial</strong>
+                                <p>La web captura la imagen y la envía al backend para consultar el servicio facial.</p>
+                            </div>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-index">03</span>
+                            <div>
+                                <strong>Bitácora de acceso</strong>
+                                <p>Los resultados exitosos o fallidos se guardan en PostgreSQL para seguimiento.</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Acciones rápidas</h2>
+                            <p class="card-subtitle">Atajos principales del panel</p>
+                        </div>
+                    </div>
+                    <div class="quick-links">
+                        <a class="quick-link-card" href="register-user.html">
+                            <strong>Alta de usuario</strong>
+                            <span>Crear cuentas y guardar su registro en PostgreSQL.</span>
+                        </a>
+                        <a class="quick-link-card" href="login.html">
+                            <strong>Ingreso facial</strong>
+                            <span>Capturar rostro y validar acceso desde el navegador.</span>
+                        </a>
+                        <a class="quick-link-card" href="settings.html">
+                            <strong>Configuración</strong>
+                            <span>Ajustar visualización, preferencias y opciones del panel.</span>
+                        </a>
+                    </div>
+                </article>
+            </section>
+
+            <section class="two-col dashboard-grid">
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Accesos recientes</h2>
+                            <p class="card-subtitle">Últimos eventos guardados en la bitácora</p>
+                        </div>
+                    </div>
+                    <div class="activity-feed" id="accessFeed">
+                        <div class="activity-item">
+                            <div class="activity-icon blue">...</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Cargando accesos desde el backend...</div>
+                                <div class="activity-time">Espera un momento</div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Usuarios recientes</h2>
+                            <p class="card-subtitle">Últimas cuentas registradas</p>
+                        </div>
+                    </div>
+                    <div class="roster-list" id="usersRoster">
+                        <div class="roster-item">
+                            <strong>Cargando usuarios...</strong>
+                            <span>Conectando con PostgreSQL</span>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>FICCT Smart Access. Panel web sin framework, conectado a Node.js y PostgreSQL.</p>
+        </footer>
+    </div>
+
+    <script src="templatemo-daynight-script.js"></script>
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>

@@ -2,8 +2,14 @@ package com.uagrm.smartaccess
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,40 +22,43 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +69,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.uagrm.smartaccess.controller.AppController
+import com.uagrm.smartaccess.controller.AppController.FloatingMessageTone
+import com.uagrm.smartaccess.controller.LoginController
+import com.uagrm.smartaccess.controller.NetworkConfig
+import com.uagrm.smartaccess.model.AppScreen
+import com.uagrm.smartaccess.ui.dashboard.AccessDashboardScreen
+import com.uagrm.smartaccess.ui.entry.ClassroomEntryScreen
+import com.uagrm.smartaccess.ui.profile.AdminProfileScreen
+import com.uagrm.smartaccess.ui.recovery.PasswordRecoveryScreen
+import com.uagrm.smartaccess.ui.report.ReportObjectsScreen
 import com.uagrm.smartaccess.ui.theme.AccentRed
 import com.uagrm.smartaccess.ui.theme.AccentRedDark
 import com.uagrm.smartaccess.ui.theme.Danger
@@ -70,6 +89,8 @@ import com.uagrm.smartaccess.ui.theme.SmartAccessTheme
 import com.uagrm.smartaccess.ui.theme.Success
 import com.uagrm.smartaccess.ui.theme.SurfaceCard
 import com.uagrm.smartaccess.ui.theme.WhiteText
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,28 +98,159 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SmartAccessTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
-                ) { innerPadding ->
-                    LoginScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                SmartAccessApp()
             }
         }
     }
 }
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
-    var registrationNumber by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(true) }
-    var passwordVisible by remember { mutableStateOf(false) }
+private fun SmartAccessApp() {
+    val appController = remember { AppController() }
+    val loginController = remember { LoginController() }
+    val context = LocalContext.current
 
-    val registrationError = registrationNumber.isNotBlank() && registrationNumber.length < 5
-    val passwordError = password.isNotBlank() && password.length < 6
+    LaunchedEffect(Unit) {
+        NetworkConfig.initialize(context)
+        loginController.restoreRememberedSession(context)
+    }
+
+    LaunchedEffect(appController.currentScreen) {
+        if (appController.currentScreen == AppScreen.LOGIN) {
+            while (appController.currentScreen == AppScreen.LOGIN) {
+                loginController.checkBackendHealth()
+                delay(5000)
+            }
+        }
+    }
+
+    LaunchedEffect(appController.floatingMessage) {
+        if (appController.floatingMessage != null) {
+            delay(2600)
+            appController.consumeFloatingMessage()
+        }
+    }
+
+    BackHandler(enabled = appController.currentScreen != AppScreen.LOGIN) {
+        appController.handleBack()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        ) { innerPadding ->
+            when (appController.currentScreen) {
+            AppScreen.LOGIN -> {
+                LoginScreen(
+                    modifier = Modifier.padding(innerPadding),
+                        controller = loginController,
+                        onRecoverPassword = {
+                            appController.openPasswordRecovery(loginController.state.registrationNumber)
+                        },
+                        onLoginSuccess = {
+                            appController.updateLoggedInUserName(loginController.loggedInUserName)
+                            appController.updateLoggedInUserRegistration(loginController.loggedInUserRegistration)
+                            loginController.pullFloatingMessage()?.let {
+                                appController.showFloatingMessage(it, FloatingMessageTone.SUCCESS)
+                            }
+                            appController.openDashboard()
+                        }
+                    )
+            }
+
+            AppScreen.PASSWORD_RECOVERY -> {
+                PasswordRecoveryScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    registrationNumber = appController.recoveryRegistration,
+                    onBack = { appController.openLogin() }
+                )
+            }
+
+                AppScreen.DASHBOARD -> {
+                    AccessDashboardScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        onLogout = { appController.closeSession() },
+                        onOpenClassroomEntry = { appController.openClassroomEntry() },
+                        onOpenReportObjects = { appController.openReportObjects() },
+                        onOpenProfile = { appController.openProfileAdmin() }
+                    )
+                }
+
+                AppScreen.CLASSROOM_ENTRY -> {
+                    ClassroomEntryScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        onBack = { appController.openDashboard() }
+                    )
+                }
+
+                AppScreen.REPORT_OBJECTS -> {
+                    ReportObjectsScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        loggedInUserName = appController.loggedInUserName,
+                        loggedInUserRegistration = appController.loggedInUserRegistration,
+                        onFloatingMessage = appController::showFloatingMessage,
+                        onBack = { appController.openDashboard() }
+                    )
+                }
+
+                AppScreen.PROFILE_ADMIN -> {
+                    AdminProfileScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        onBack = { appController.openDashboard() }
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = appController.floatingMessage != null,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(top = 12.dp)
+                .align(androidx.compose.ui.Alignment.TopCenter),
+            enter = slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it / 2 }) + fadeOut()
+        ) {
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = when (appController.floatingMessageTone) {
+                    FloatingMessageTone.SUCCESS -> Color(0xFF1F8F5A).copy(alpha = 0.82f)
+                    FloatingMessageTone.ERROR -> AccentRed.copy(alpha = 0.46f)
+                    FloatingMessageTone.INFO -> AccentRedDark.copy(alpha = 0.38f)
+                },
+                border = BorderStroke(
+                    1.dp,
+                    when (appController.floatingMessageTone) {
+                        FloatingMessageTone.SUCCESS -> Color(0xFF7BE0AD).copy(alpha = 0.7f)
+                        FloatingMessageTone.ERROR -> Color.White.copy(alpha = 0.14f)
+                        FloatingMessageTone.INFO -> Color.White.copy(alpha = 0.14f)
+                    }
+                ),
+                shadowElevation = 10.dp
+            ) {
+                Text(
+                    text = appController.floatingMessage.orEmpty(),
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = WhiteText
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    controller: LoginController,
+    onRecoverPassword: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
+) {
+    val state = controller.state
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -112,105 +264,131 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Color(0xB3061A31)
-                )
+                .background(Color(0xB3061A31))
         )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 20.dp, vertical = 18.dp)
         ) {
             Column {
                 BrandBlock()
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(18.dp))
                 Surface(
                     shape = RoundedCornerShape(50.dp),
-                    color = AccentRed.copy(alpha = 0.18f)
+                    color = when (controller.isBackendHealthy) {
+                        true -> Success.copy(alpha = 0.18f)
+                        false -> AccentRed.copy(alpha = 0.18f)
+                        null -> Color.White.copy(alpha = 0.12f)
+                    },
+                    border = BorderStroke(
+                        width = 1.5.dp,
+                        color = when (controller.isBackendHealthy) {
+                            true -> Success.copy(alpha = 0.95f)
+                            false -> Danger.copy(alpha = 0.95f)
+                            null -> Color.White.copy(alpha = 0.35f)
+                        }
+                    )
                 ) {
                     Text(
                         text = "Control de Acceso Inteligente",
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
                         color = WhiteText
                     )
                 }
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Sistema Inteligente de Control de Acceso",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = WhiteText
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "Aulas y laboratorios - FICCT UAGRM",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = WhiteText.copy(alpha = 0.72f)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Gestione accesos, disponibilidad de ambientes, incidencias e inventario desde una plataforma centralizada.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = WhiteText.copy(alpha = 0.62f)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(18.dp))
                 Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+                    shape = RoundedCornerShape(32.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(22.dp)
+                            .padding(horizontal = 20.dp, vertical = 22.dp)
                     ) {
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = AccentRed.copy(alpha = 0.1f)
+                        ) {
+                            Text(
+                                text = "Acceso seguro",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = AccentRedDark
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Inicio de sesion",
-                            style = MaterialTheme.typography.titleLarge,
+                            text = "Inicio de sesión",
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Ingrese sus credenciales para administrar accesos y consultar informacion operativa del modulo academico.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            text = "Ingresa tus credenciales institucionales para continuar.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF5B6472)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         HorizontalDivider(color = Line)
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         OutlinedTextField(
-                            value = registrationNumber,
-                            onValueChange = { registrationNumber = it.filter(Char::isLetterOrDigit).uppercase() },
+                            value = state.registrationNumber,
+                            onValueChange = controller::updateRegistrationNumber,
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(22.dp),
                             singleLine = true,
-                            label = { Text("Numero de registro") },
+                            label = { Text("Número de registro") },
                             placeholder = { Text("Ej. 202400123") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "Registro",
+                                    tint = AccentRedDark
+                                )
+                            },
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.Characters,
                                 keyboardType = KeyboardType.Text,
                                 imeAction = ImeAction.Next
                             ),
-                            isError = registrationError,
+                            isError = state.registrationError,
                             supportingText = {
-                                if (registrationError) {
-                                    Text("Ingresa un numero de registro valido")
+                                if (state.registrationError) {
+                                    Text("Ingresa un número de registro válido")
                                 }
                             },
                             colors = loginFieldColors()
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
+                            value = state.password,
+                            onValueChange = controller::updatePassword,
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(22.dp),
                             singleLine = true,
                             label = { Text("Contraseña") },
                             placeholder = { Text("Min. 6 caracteres") },
-                            visualTransformation = if (passwordVisible) {
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Lock,
+                                    contentDescription = "Contraseña",
+                                    tint = AccentRedDark
+                                )
+                            },
+                            visualTransformation = if (state.passwordVisible) {
                                 VisualTransformation.None
                             } else {
                                 PasswordVisualTransformation()
@@ -221,17 +399,15 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                             ),
                             trailingIcon = {
                                 IconButton(
-                                    onClick = {
-                                        passwordVisible = !passwordVisible
-                                    }
+                                    onClick = controller::togglePasswordVisibility
                                 ) {
                                     Icon(
-                                        imageVector = if (passwordVisible) {
+                                        imageVector = if (state.passwordVisible) {
                                             ImageVector.vectorResource(R.drawable.ic_visibility_off)
                                         } else {
                                             ImageVector.vectorResource(R.drawable.ic_visibility)
                                         },
-                                        contentDescription = if (passwordVisible) {
+                                        contentDescription = if (state.passwordVisible) {
                                             "Ocultar contraseña"
                                         } else {
                                             "Mostrar contraseña"
@@ -240,23 +416,23 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                                     )
                                 }
                             },
-                            isError = passwordError,
+                            isError = state.passwordError,
                             supportingText = {
-                                if (passwordError) {
+                                if (state.passwordError) {
                                     Text("La contraseña debe tener al menos 6 caracteres")
                                 }
                             },
                             colors = loginFieldColors()
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 Checkbox(
-                                    checked = rememberMe,
-                                    onCheckedChange = { rememberMe = it },
+                                    checked = state.rememberMe,
+                                    onCheckedChange = controller::updateRememberMe,
                                     colors = CheckboxDefaults.colors(
                                         checkedColor = Success,
                                         uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
@@ -267,44 +443,52 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
-                            Text(
-                                text = "Recuperar",
-                                modifier = Modifier.padding(top = 12.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Sky
-                            )
+                            Surface(
+                                onClick = onRecoverPassword,
+                                color = Color.Transparent
+                            ) {
+                                Text(
+                                    text = "Recuperar",
+                                    modifier = Modifier.padding(top = 12.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Sky
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Button(
-                            onClick = {},
+                            onClick = {
+                                scope.launch {
+                                    if (controller.login(context)) {
+                                        onLoginSuccess()
+                                    }
+                                }
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(54.dp),
+                                .height(50.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = AccentRed,
-                                contentColor = WhiteText
+                                contentColor = WhiteText,
                             ),
-                            shape = RoundedCornerShape(18.dp)
+                            shape = RoundedCornerShape(18.dp),
+                            enabled = !controller.isBusy
                         ) {
                             Text(
-                                text = "Entrar",
-                                style = MaterialTheme.typography.titleMedium,
+                                text = if (controller.isBusy) "Validando..." else "Iniciar Sesion",
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Uso exclusivo para porteria, personal autorizado, docentes y estudiantes habilitados.",
+                            text = controller.feedbackMessage,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                            color = if (controller.feedbackMessage.startsWith("Bienvenido")) Success else Danger
                         )
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SecurityFooter()
         }
     }
 }
@@ -313,7 +497,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 @Composable
 fun LoginPreview() {
     SmartAccessTheme {
-        LoginScreen()
+        LoginScreen(controller = LoginController())
     }
 }
 
@@ -322,9 +506,9 @@ private fun BrandBlock() {
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         Surface(
             modifier = Modifier
-                .size(52.dp)
-                .clip(RoundedCornerShape(18.dp)),
-            shape = RoundedCornerShape(18.dp),
+                .size(44.dp)
+                .clip(RoundedCornerShape(14.dp)),
+            shape = RoundedCornerShape(14.dp),
             color = Color.White.copy(alpha = 0.94f)
         ) {
             Image(
@@ -332,21 +516,21 @@ private fun BrandBlock() {
                 contentDescription = "Escudo FICCT",
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(6.dp),
+                    .padding(5.dp),
                 contentScale = ContentScale.Fit
             )
         }
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Column {
             Text(
                 text = "FICCT - UAGRM",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = WhiteText
             )
             Text(
-                text = "Acceso, seguridad y gestion de ambientes",
-                style = MaterialTheme.typography.bodyMedium,
+                text = "Acceso, seguridad y gestión de ambientes",
+                style = MaterialTheme.typography.bodySmall,
                 color = WhiteText.copy(alpha = 0.68f)
             )
         }
@@ -354,50 +538,17 @@ private fun BrandBlock() {
 }
 
 @Composable
-private fun SecurityFooter() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White.copy(alpha = 0.08f))
-            .padding(horizontal = 18.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Gestion centralizada",
-                style = MaterialTheme.typography.labelLarge,
-                color = WhiteText
-            )
-            Text(
-                text = "Registro de accesos, control de ambientes y seguimiento de incidencias",
-                style = MaterialTheme.typography.bodySmall,
-                color = WhiteText.copy(alpha = 0.64f)
-            )
-        }
-        Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
-            Text(
-                text = "FICCT",
-                style = MaterialTheme.typography.labelLarge,
-                color = Mint
-            )
-            Text(
-                text = "UAGRM",
-                style = MaterialTheme.typography.bodySmall,
-                color = WhiteText.copy(alpha = 0.64f)
-            )
-        }
-    }
-}
-
-@Composable
 private fun loginFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = Color.White,
-    unfocusedContainerColor = Color.White.copy(alpha = 0.92f),
+    focusedContainerColor = Color(0xFFF8F9FC),
+    unfocusedContainerColor = Color(0xFFF4F6FA),
     focusedBorderColor = AccentRed,
-    unfocusedBorderColor = Line,
+    unfocusedBorderColor = Color(0xFFD9DFEA),
     errorBorderColor = Danger,
     focusedLabelColor = AccentRedDark,
+    unfocusedLabelColor = Color(0xFF6F7785),
+    focusedLeadingIconColor = AccentRedDark,
+    unfocusedLeadingIconColor = Color(0xFF7B8594),
+    focusedTrailingIconColor = Sky,
+    unfocusedTrailingIconColor = Sky.copy(alpha = 0.86f),
     cursorColor = AccentRedDark
 )

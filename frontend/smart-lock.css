@@ -1,0 +1,717 @@
+:root {
+    --lock-bg: #07111f;
+    --lock-surface: rgba(255, 255, 255, 0.9);
+    --lock-surface-soft: rgba(255, 255, 255, 0.72);
+    --lock-text: #0f223e;
+    --lock-text-soft: #5f6f84;
+    --lock-accent: #dd1f31;
+    --lock-accent-dark: #8e1021;
+    --lock-blue: #2172d9;
+    --lock-glow: rgba(33, 114, 217, 0.24);
+    --lock-door: #f5f1eb;
+    --lock-line: rgba(15, 34, 62, 0.08);
+    --lock-dark: #07090d;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(33, 114, 217, 0.16), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(221, 31, 49, 0.14), transparent 32%),
+        linear-gradient(135deg, #06101d, #0d1b31 48%, #0f2442 100%);
+    color: var(--lock-text);
+}
+
+.lock-page {
+    min-height: 100vh;
+    padding: 28px;
+}
+
+.lock-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(360px, 440px);
+    gap: 28px;
+    align-items: stretch;
+    min-height: calc(100vh - 56px);
+}
+
+.lock-stage,
+.lock-panel {
+    border-radius: 36px;
+    backdrop-filter: blur(18px);
+}
+
+.lock-stage {
+    padding: 28px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+}
+
+.lock-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.lock-brand-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: linear-gradient(145deg, var(--lock-accent), var(--lock-blue));
+    box-shadow: 0 14px 36px rgba(7, 17, 31, 0.32);
+}
+
+.lock-brand-title {
+    display: block;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.lock-brand-copy {
+    margin: 4px 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.94rem;
+}
+
+.lock-stage-copy {
+    max-width: 760px;
+}
+
+.lock-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.lock-chip-secondary {
+    background: rgba(221, 31, 49, 0.1);
+    color: var(--lock-accent-dark);
+    border-color: rgba(221, 31, 49, 0.12);
+}
+
+.lock-stage-copy h1 {
+    margin: 18px 0 12px;
+    color: #fff;
+    font-size: clamp(2.1rem, 4vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+}
+
+.lock-stage-copy p {
+    margin: 0;
+    max-width: 680px;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 1.02rem;
+    line-height: 1.7;
+}
+
+.smart-lock-showcase {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 20px;
+    align-items: end;
+}
+
+.door-panel {
+    position: relative;
+    min-height: 650px;
+    border-radius: 34px;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, rgba(7, 17, 31, 0.1), transparent 12%),
+        linear-gradient(180deg, #f9f5ef, #f4efe8);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(15, 34, 62, 0.05);
+}
+
+.door-line {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    height: 2px;
+    background: var(--lock-line);
+}
+
+.door-line-top { top: 14%; }
+.door-line-bottom { bottom: 14%; }
+
+.lock-body {
+    position: absolute;
+    left: 24%;
+    top: 12%;
+    width: 220px;
+    height: 500px;
+    border-radius: 34px;
+    background: linear-gradient(180deg, #14171d, #030406 62%, #15171a);
+    box-shadow: 0 26px 60px rgba(7, 10, 16, 0.42);
+}
+
+.lock-screen {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 18px;
+    height: 270px;
+    border-radius: 24px;
+    background: radial-gradient(circle at top, rgba(43, 120, 255, 0.14), #05070b 58%);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 22px 14px 46px;
+    gap: 22px;
+    box-sizing: border-box;
+}
+
+.lock-pin-status {
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+}
+
+.lock-pin-status small {
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.lock-pin-status strong {
+    color: #ecf4ff;
+    font-size: 1.28rem;
+    letter-spacing: 0.45em;
+    font-weight: 700;
+    text-shadow: 0 0 16px rgba(108, 164, 255, 0.22);
+}
+
+.keypad-result {
+    min-height: 1rem;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.keypad-result.is-success {
+    color: #82f7b1;
+}
+
+.keypad-result.is-error {
+    color: #ff96a7;
+}
+
+.keypad-result.is-pending {
+    color: #a8c7ff;
+}
+
+.lock-digits {
+    width: 132px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 18px;
+    justify-items: center;
+}
+
+.lock-key {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #6ca4ff;
+    font-size: 1.92rem;
+    text-shadow: 0 0 10px rgba(108, 164, 255, 0.42);
+    cursor: pointer;
+    transition: transform 0.16s ease, color 0.16s ease, text-shadow 0.16s ease;
+}
+
+.lock-key:hover,
+.lock-key:focus-visible {
+    color: #dcebff;
+    transform: scale(1.08);
+    text-shadow: 0 0 16px rgba(108, 164, 255, 0.56);
+    outline: none;
+}
+
+.lock-key:active {
+    transform: scale(0.94);
+}
+
+.lock-key-action {
+    color: #ff89a0;
+    text-shadow: 0 0 12px rgba(221, 31, 49, 0.44);
+}
+
+.keypad-reset-button {
+    position: absolute;
+    left: 50%;
+    bottom: -128px;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(9, 12, 18, 0.9);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.16s ease, transform 0.16s ease, color 0.16s ease;
+}
+
+.keypad-reset-button:hover,
+.keypad-reset-button:focus-visible {
+    background: rgba(221, 31, 49, 0.88);
+    color: #fff;
+    transform: translateX(-50%) scale(1.03);
+    outline: none;
+}
+
+.lock-card-tag {
+    position: absolute;
+    bottom: -154px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 9px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    background: rgba(8, 11, 16, 0.88);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+.lock-handle {
+    position: absolute;
+    left: 50%;
+    top: 388px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+
+.lock-hub {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #1d222a, #090b10);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.03);
+}
+
+.lock-hub::after {
+    content: "";
+    position: absolute;
+    inset: 13px auto auto 13px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #05070a;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+}
+
+.lock-grip {
+    width: 222px;
+    height: 34px;
+    margin-left: -6px;
+    border-radius: 0 22px 22px 0;
+    background: linear-gradient(180deg, #1b1e24, #0a0c10 72%);
+    box-shadow: 0 12px 24px rgba(8, 9, 11, 0.3);
+}
+
+.lock-logo {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    width: 88px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    letter-spacing: 0.03em;
+}
+
+.access-ring {
+    position: absolute;
+    right: 34px;
+    top: 22%;
+    width: 360px;
+    height: 360px;
+}
+
+.ring-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 16px solid rgba(79, 90, 108, 0.28);
+    border-left-color: transparent;
+    border-top-color: rgba(79, 90, 108, 0.14);
+}
+
+.ring-item {
+    position: absolute;
+    width: 98px;
+    height: 98px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 2px solid rgba(96, 104, 119, 0.56);
+    box-shadow: 0 10px 22px rgba(54, 58, 66, 0.14);
+    color: var(--lock-text);
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.ring-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.ring-card { top: -10px; right: 70px; }
+.ring-finger { top: 96px; right: -8px; }
+.ring-pin { bottom: 84px; right: 10px; }
+.ring-app { bottom: -6px; right: 108px; }
+.ring-key { bottom: 8px; left: 26px; }
+
+.lock-specs {
+    display: grid;
+    gap: 12px;
+}
+
+.lock-specs article {
+    padding: 16px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.lock-specs strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+.lock-specs p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.74);
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.lock-panel {
+    padding: 0;
+}
+
+.smart-login-card {
+    height: 100%;
+    min-height: calc(100vh - 56px);
+    border-radius: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(245, 247, 251, 0.94));
+    box-shadow: 0 22px 60px rgba(2, 10, 20, 0.24);
+    padding: 28px;
+}
+
+.smart-login-header h2 {
+    margin: 18px 0 8px;
+    font-size: 2rem;
+    color: var(--lock-text);
+}
+
+.smart-login-header p {
+    margin: 0;
+    color: var(--lock-text-soft);
+    line-height: 1.6;
+}
+
+.smart-login-form {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.keypad-helper {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(221, 31, 49, 0.06);
+    border: 1px solid rgba(221, 31, 49, 0.1);
+}
+
+.keypad-helper strong {
+    display: block;
+    color: var(--lock-accent-dark);
+    margin-bottom: 6px;
+}
+
+.keypad-helper p {
+    margin: 0;
+    color: var(--lock-text-soft);
+    line-height: 1.55;
+}
+
+.smart-field {
+    display: grid;
+    gap: 8px;
+}
+
+.smart-field > span,
+.smart-label-row span {
+    font-weight: 700;
+    color: var(--lock-text);
+}
+
+.smart-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.smart-input {
+    border-radius: 18px;
+    border: 1px solid rgba(95, 111, 132, 0.18);
+    background: rgba(255, 255, 255, 0.96);
+    padding: 1rem 1.05rem;
+    color: var(--lock-text);
+}
+
+.smart-remember {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lock-text-soft);
+    font-size: 0.92rem;
+}
+
+.smart-submit {
+    padding: 1rem 1.2rem;
+    border-radius: 18px;
+}
+
+.smart-divider {
+    position: relative;
+    margin: 26px 0 18px;
+    text-align: center;
+    color: var(--lock-text-soft);
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.smart-divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgba(95, 111, 132, 0.16);
+}
+
+.smart-divider span {
+    position: relative;
+    background: #f7f9fc;
+    padding: 0 12px;
+}
+
+.smart-camera-card {
+    margin-top: 0;
+    padding: 20px;
+    border-radius: 26px;
+    background: rgba(12, 22, 36, 0.04);
+    border: 1px solid rgba(95, 111, 132, 0.12);
+}
+
+.smart-camera-frame {
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #09111f, #0e1b30);
+    min-height: 220px;
+}
+
+.smart-action-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.smart-status-row {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lock-text-soft);
+    font-size: 0.85rem;
+}
+
+.smart-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--lock-accent), var(--lock-blue));
+    box-shadow: 0 0 0 6px rgba(221, 31, 49, 0.08);
+}
+
+.capture-canvas {
+    display: none;
+}
+
+@media (max-width: 1180px) {
+    .lock-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .smart-lock-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .lock-specs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 860px) {
+    .lock-page {
+        padding: 14px;
+    }
+
+    .lock-stage,
+    .smart-login-card {
+        border-radius: 28px;
+        padding: 20px;
+    }
+
+    .door-panel {
+        min-height: 560px;
+    }
+
+    .lock-body {
+        left: 17%;
+        width: 182px;
+        height: 426px;
+    }
+
+    .lock-grip {
+        width: 176px;
+    }
+
+    .access-ring {
+        right: 16px;
+        width: 300px;
+        height: 300px;
+    }
+
+    .ring-item {
+        width: 84px;
+        height: 84px;
+    }
+
+    .lock-specs {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .lock-stage-copy h1 {
+        font-size: 2.2rem;
+    }
+
+    .door-panel {
+        min-height: 500px;
+    }
+
+    .lock-body {
+        left: 12%;
+        top: 16%;
+        width: 158px;
+        height: 376px;
+    }
+
+    .lock-screen {
+        height: 220px;
+        padding: 18px 12px 40px;
+        gap: 16px;
+    }
+
+    .lock-digits {
+        width: 108px;
+        gap: 14px 12px;
+    }
+
+    .lock-key {
+        width: 30px;
+        height: 30px;
+        font-size: 1.56rem;
+    }
+
+    .lock-handle {
+        left: 50%;
+        top: 320px;
+        transform: translateX(-50%);
+    }
+
+    .lock-hub {
+        width: 46px;
+        height: 46px;
+    }
+
+    .lock-grip {
+        width: 140px;
+        height: 26px;
+    }
+
+    .access-ring {
+        position: relative;
+        right: auto;
+        top: auto;
+        width: 100%;
+        height: auto;
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .ring-track {
+        display: none;
+    }
+
+    .ring-item {
+        position: static;
+        width: auto;
+        height: 92px;
+    }
+}

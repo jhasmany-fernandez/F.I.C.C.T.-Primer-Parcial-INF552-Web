@@ -1,4 +1,4 @@
-# Proyecto multi-stack: Android, Next.js, Django y Flask
+# Proyecto multi-stack: Android, frontend web estatico, backend Node.js y servicio Python
 
 # Environment variables and secrets
 .env
@@ -21,6 +21,9 @@ logs/
 *.backup
 *.old
 *.orig
+
+# Local session/state files
+SESSION_STATE.md
 
 # OS metadata
 .DS_Store
@@ -62,12 +65,6 @@ instance/
 .webassets-cache
 db.sqlite3
 db.sqlite3-journal
-
-# Backend generated files
-backend-intelligent/media/
-backend-intelligent/staticfiles/
-backend-intelligent/static/admin/
-backend-intelligent/static/rest_framework/
 
 # Node / Next.js
 node_modules/
