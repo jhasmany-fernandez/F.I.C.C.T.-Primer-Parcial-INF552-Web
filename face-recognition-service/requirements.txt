@@ -1,5 +1,0 @@
-deepface==0.0.93
-Flask>=3.0.0
-Pillow>=10.2.0
-tf-keras>=2.16.0
-scikit-learn>=1.3.0

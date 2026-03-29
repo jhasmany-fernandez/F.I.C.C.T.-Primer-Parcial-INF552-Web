@@ -1,7 +1,7 @@
 const { createAccessLog, findUserByExternalId } = require("../models/accessLogModel");
 const { findUserForLogin } = require("../models/userModel");
 const { proxyFaceLogin } = require("../services/faceRecognitionService");
-const { verifyPassword } = require("../services/userService");
+const { isTemporaryPassword, TEMPORARY_PASSWORD, verifyPassword } = require("../services/userService");
 const { readJsonBody } = require("../utils/httpUtils");
 const { cleanValue } = require("../utils/valueUtils");
 const { serializeUser } = require("../views/userView");
@@ -38,16 +38,24 @@ async function handlePasswordLogin(request, response, ensureDatabase) {
       return;
     }
 
+    const requirePasswordReset = user.estado === "Pendiente" || isTemporaryPassword(password);
+
     await createAccessLog({
       identifier: registro,
-      reason: "Inicio de sesión exitoso por contraseña.",
+      reason: requirePasswordReset
+        ? "Inicio de sesión con contraseña temporal."
+        : "Inicio de sesión exitoso por contraseña.",
       success: true,
       userId: user.id,
     }, ensureDatabase);
 
     sendJson(response, 200, {
       success: true,
-      message: "Inicio de sesión correcto.",
+      message: requirePasswordReset
+        ? "Debes cambiar tu contraseña temporal para continuar."
+        : "Inicio de sesión correcto.",
+      requirePasswordReset,
+      temporaryPasswordHint: requirePasswordReset ? TEMPORARY_PASSWORD : null,
       user: serializeUser(user),
     });
   } catch (error) {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Lock Access - FICCT</title>
+    <link rel="icon" type="image/png" href="assets/Escudo_FICCT.png">
     <script>if(localStorage.getItem("daynight-theme")==="carbon"){document.documentElement.classList.add("carbon");}</script>
     <link rel="stylesheet" href="templatemo-daynight-style.css">
     <link rel="stylesheet" href="smart-lock.css">
@@ -13,7 +14,9 @@
         <div class="lock-shell">
             <section class="lock-stage">
                 <div class="lock-brand">
-                    <div class="lock-brand-mark">SA</div>
+                    <div class="lock-brand-mark" aria-hidden="true">
+                        <img class="lock-brand-icon" src="assets/Escudo_FICCT.png" alt="Escudo FICCT">
+                    </div>
                     <div>
                         <span class="lock-brand-title">FICCT Smart Access</span>
                         <p class="lock-brand-copy">Prototipo visual de chapa inteligente para control de acceso.</p>
@@ -55,11 +58,11 @@
                                     <button type="button" class="lock-key" data-key="0">0</button>
                                     <button type="button" class="lock-key lock-key-action" id="keypadSubmitBtn" data-key="submit">#</button>
                                 </div>
-                                <button type="button" class="keypad-reset-button" id="keypadResetButton">
-                                    Borrar PIN
-                                </button>
-                                <div class="lock-card-tag">CARD</div>
                             </div>
+                            <button type="button" class="keypad-reset-button" id="keypadResetButton">
+                                Borrar PIN
+                            </button>
+                            <div class="lock-card-tag">CARD</div>
                             <div class="lock-handle">
                                 <div class="lock-hub"></div>
                                 <div class="lock-grip"></div>
@@ -94,103 +97,21 @@
 
                     <div class="lock-specs">
                         <article>
-                            <strong>TTLOCK</strong>
-                            <p>Gestión remota y desbloqueo desde aplicación.</p>
+                            <strong>PIN temporal</strong>
+                            <p>La chapa valida el código de 6 dígitos generado desde la app móvil.</p>
                         </article>
                         <article>
-                            <strong>Wi-Fi opcional</strong>
-                            <p>Control del cerrojo desde cualquier lugar.</p>
+                            <strong>Huella móvil</strong>
+                            <p>La app autoriza el acceso biométrico por huella y la chapa recibe la validación.</p>
                         </article>
                         <article>
-                            <strong>Acceso híbrido</strong>
-                            <p>Huella, tarjeta, clave y llave mecánica.</p>
+                            <strong>Reconocimiento facial</strong>
+                            <p>El backend procesa el rostro capturado y confirma la identidad para abrir el acceso.</p>
                         </article>
                     </div>
                 </div>
             </section>
 
-            <section class="lock-panel">
-                <div class="login-card smart-login-card">
-                    <div class="smart-login-header">
-                        <span class="lock-chip lock-chip-secondary">Simulación de acceso</span>
-                        <h2>Autenticación del usuario</h2>
-                        <p>Ingresa con tu registro, valida el rostro o prueba la cámara del prototipo.</p>
-                    </div>
-
-                    <div id="loginFeedback" class="auth-success auth-feedback is-hidden">
-                        <strong id="feedbackTitle">Servicio listo</strong>
-                        <p id="feedbackMessage">Todavía no se realizó ninguna validación.</p>
-                    </div>
-
-                    <div class="keypad-helper">
-                        <strong>Teclado inteligente</strong>
-                        <p>El PIN del dibujo valida el código temporal que se genera desde la app móvil.</p>
-                    </div>
-
-                    <form class="smart-login-form" id="passwordLoginForm">
-                        <label class="smart-field">
-                            <span>Número de registro</span>
-                            <input type="text" class="form-input smart-input" id="identifierInput" placeholder="Ej. 221045321">
-                        </label>
-
-                        <label class="smart-field">
-                            <div class="smart-label-row">
-                                <span>Contraseña</span>
-                                <a href="reset.html" class="auth-inline-link">Recuperar acceso</a>
-                            </div>
-                            <input type="password" class="form-input smart-input" id="passwordInput" placeholder="••••••••">
-                        </label>
-
-                        <label class="smart-remember">
-                            <input type="checkbox" id="remember">
-                            <span>Mantener sesión en este equipo</span>
-                        </label>
-
-                        <button type="submit" class="btn btn-primary smart-submit">
-                            Ingresar con contraseña
-                        </button>
-                    </form>
-
-                    <div class="smart-divider">
-                        <span>o desbloquea con la chapa inteligente</span>
-                    </div>
-
-                    <div class="camera-card smart-camera-card">
-                        <div class="camera-frame smart-camera-frame">
-                            <video id="cameraPreview" class="camera-preview" autoplay playsinline muted></video>
-                            <div id="cameraOverlay" class="camera-overlay">
-                                <div class="camera-guides"></div>
-                                <p class="camera-hint">Activa la cámara para iniciar la validación facial</p>
-                            </div>
-                        </div>
-
-                        <button type="button" class="camera-switch" id="startCameraBtn" aria-pressed="false">
-                            <span class="camera-switch-copy">
-                                <strong id="cameraToggleLabel">Cámara desactivada</strong>
-                                <small id="cameraToggleHint">Enciende la vista previa para validar el rostro.</small>
-                            </span>
-                            <span class="camera-switch-track" aria-hidden="true">
-                                <span class="camera-switch-thumb"></span>
-                            </span>
-                        </button>
-
-                        <div class="smart-action-grid">
-                            <button type="button" class="btn btn-primary" id="faceLoginBtn">
-                                Iniciar con reconocimiento facial
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="captureOnlyBtn">
-                                Capturar rostro de prueba
-                            </button>
-                        </div>
-
-                        <div class="smart-status-row">
-                            <span class="smart-status-dot"></span>
-                            <span id="cameraToggleState">OFF</span>
-                            <small>Simulación de cámara conectada al backend Node.js</small>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
     </div>
 

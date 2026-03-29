@@ -110,6 +110,7 @@ face-recognition-service/face_data/*
 checkpoint
 
 # Android / Gradle / Android Studio
+App/
 App/.gradle/
 App/.kotlin/
 App/build/
@@ -122,6 +123,11 @@ App/app/build/
 
 # Java / Kotlin generic
 *.class
+
+# Local data preparation and import helpers
+scripts/
+*.xlsx
+*.xls
 
 # Keep repository essentials
 !.gitignore

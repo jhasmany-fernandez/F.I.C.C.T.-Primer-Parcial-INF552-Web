@@ -30,6 +30,18 @@ loadEnvironment(path.resolve(__dirname, "../.env"));
 const PORT = Number(process.env.PORT || 8081);
 const FACE_SERVICE_URL = process.env.FACE_SERVICE_URL || "http://127.0.0.1:8080/search";
 const FRONTEND_DIR = path.resolve(__dirname, "../frontend");
+const FRONTEND_ASSET_EXTENSIONS = new Set([
+  ".css",
+  ".gif",
+  ".ico",
+  ".jpeg",
+  ".jpg",
+  ".js",
+  ".map",
+  ".png",
+  ".svg",
+  ".webp",
+]);
 
 let databaseInitialized = false;
 
@@ -37,6 +49,15 @@ function getStaticPath(urlPathname) {
   const requestedPath = urlPathname === "/" ? "/login.html" : urlPathname;
   const safePath = path.normalize(requestedPath).replace(/^(\.\.[/\\])+/, "");
   return path.join(FRONTEND_DIR, safePath);
+}
+
+function isAllowedFrontendPath(urlPathname) {
+  if (urlPathname === "/") {
+    return true;
+  }
+
+  const extension = path.extname(urlPathname).toLowerCase();
+  return FRONTEND_ASSET_EXTENSIONS.has(extension);
 }
 
 async function ensureDatabase() {
@@ -138,6 +159,11 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === "GET") {
+    if (!isAllowedFrontendPath(requestUrl.pathname)) {
+      sendJson(response, 404, { error: "Recurso no encontrado" });
+      return;
+    }
+
     const filePath = getStaticPath(requestUrl.pathname);
 
     if (!filePath.startsWith(FRONTEND_DIR)) {
@@ -152,7 +178,7 @@ const server = http.createServer(async (request, response) => {
       }
 
       if (stats.isDirectory()) {
-        sendFile(response, path.join(filePath, "login.html"));
+        sendJson(response, 404, { error: "Recurso no encontrado" });
         return;
       }
 

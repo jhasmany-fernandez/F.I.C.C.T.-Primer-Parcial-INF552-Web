@@ -5,6 +5,8 @@ const {
   normalizeHeader,
 } = require("../utils/valueUtils");
 
+const TEMPORARY_PASSWORD = "123ppp---";
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const derivedKey = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -29,6 +31,10 @@ function verifyPassword(password, passwordHash) {
   }
 
   return crypto.timingSafeEqual(derivedKeyBuffer, storedBuffer);
+}
+
+function isTemporaryPassword(password) {
+  return password === TEMPORARY_PASSWORD;
 }
 
 function inferRoleFromSheetName(sheetName) {
@@ -87,26 +93,24 @@ function validateUserPayload(payload) {
     correo: normalizeEmail(payload.correo),
     estado: cleanValue(payload.estado) || "Activo",
     nombre: cleanValue(payload.nombre),
-    password: typeof payload.password === "string" ? payload.password : "",
+    password: TEMPORARY_PASSWORD,
     registro: cleanValue(payload.registro),
     rol: cleanValue(payload.rol),
   };
 
-  if (!user.ci || !user.registro || !user.nombre || !user.apellido || !user.correo || !user.password || !user.rol) {
+  if (!user.ci || !user.registro || !user.nombre || !user.apellido || !user.correo || !user.rol) {
     return { error: "Todos los campos obligatorios deben completarse." };
-  }
-
-  if (user.password.length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres." };
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.correo)) {
     return { error: "El correo institucional no es válido." };
   }
 
-  if (!["Activo", "Inactivo"].includes(user.estado)) {
+  if (!["Activo", "Inactivo", "Pendiente"].includes(user.estado)) {
     return { error: "El estado indicado no es válido." };
   }
+
+  user.estado = "Pendiente";
 
   return { user };
 }
@@ -156,7 +160,7 @@ function buildImportedUserPayload(payload) {
       estado: ["Activo", "Inactivo", "Pendiente"].includes(estado) ? estado : "Pendiente",
       faceExternalId: registro,
       nombre,
-      password: payload.password || `${registro}-Temp2026`,
+      password: TEMPORARY_PASSWORD,
       registro,
       rol,
     },
@@ -166,7 +170,9 @@ function buildImportedUserPayload(payload) {
 module.exports = {
   buildImportedUserPayload,
   hashPassword,
+  isTemporaryPassword,
   mapExcelUserRows,
+  TEMPORARY_PASSWORD,
   verifyPassword,
   validatePasswordUpdatePayload,
   validateUserPayload,

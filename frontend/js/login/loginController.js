@@ -38,6 +38,7 @@ export class LoginController {
                         : "La chapa inteligente recibió autorización por huella dactilar desde la app móvil."
                 );
                 this.view.updateKeypadResult("success", methodLabel);
+                await this.view.playUnlockAnimation();
                 this.view.redirectToDashboard();
             } catch (_error) {
                 // Silent polling; the page should keep working even if the backend check fails temporarily.
@@ -132,6 +133,8 @@ export class LoginController {
                 "Acceso concedido",
                 `${result.message || "Reconocimiento facial exitoso."}${similarityText}`
             );
+            this.view.updateKeypadResult("success", "Rostro validado");
+            await this.view.playUnlockAnimation();
             this.view.redirectToDashboard();
         } catch (error) {
             this.view.setFeedback("error", "Acceso denegado", error.message || "No fue posible autenticar el rostro.");
@@ -204,6 +207,7 @@ export class LoginController {
             this.view.setFeedback(null, "Acceso permitido", result.message || "Código temporal válido.");
             this.model.clearKeypadBuffer();
             this.view.updateKeypadDisplay("");
+            await this.view.playUnlockAnimation();
             this.view.redirectToDashboard();
         } catch (error) {
             this.view.updateKeypadResult("error", "PIN incorrecto");

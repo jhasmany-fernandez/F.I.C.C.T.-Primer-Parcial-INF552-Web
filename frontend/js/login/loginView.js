@@ -17,6 +17,8 @@ export class LoginView {
         this.keypadResult = document.getElementById("keypadResult");
         this.keypadButtons = Array.from(document.querySelectorAll(".lock-key"));
         this.keypadResetButton = document.getElementById("keypadResetButton");
+        this.lockBody = document.querySelector(".lock-body");
+        this.lockHandle = document.querySelector(".lock-handle");
     }
 
     bind(controller) {
@@ -32,6 +34,10 @@ export class LoginView {
     }
 
     setFeedback(type, title, message) {
+        if (!this.feedbackBox || !this.feedbackTitle || !this.feedbackMessage) {
+            return;
+        }
+
         this.feedbackBox.classList.remove("is-hidden", "is-error", "is-warning", "is-info");
         if (type) {
             this.feedbackBox.classList.add(`is-${type}`);
@@ -60,18 +66,30 @@ export class LoginView {
     }
 
     attachStream(stream) {
+        if (!this.cameraPreview || !this.cameraOverlay) {
+            return;
+        }
+
         this.cameraPreview.srcObject = stream;
         this.cameraOverlay.classList.add("is-active");
         this.updateCameraToggle(true);
     }
 
     detachStream() {
+        if (!this.cameraPreview || !this.cameraOverlay) {
+            return;
+        }
+
         this.cameraPreview.srcObject = null;
         this.cameraOverlay.classList.remove("is-active");
         this.updateCameraToggle(false);
     }
 
     captureFrame() {
+        if (!this.cameraPreview || !this.captureCanvas) {
+            return null;
+        }
+
         if (!this.cameraPreview.videoWidth || !this.cameraPreview.videoHeight) {
             return null;
         }
@@ -110,10 +128,28 @@ export class LoginView {
         this.keypadResult.textContent = message;
     }
 
-    redirectToDashboard() {
+    async playUnlockAnimation() {
+        if (!this.lockBody || !this.lockHandle) {
+            return;
+        }
+
+        this.lockBody.classList.remove("is-unlocking");
+        this.lockHandle.classList.remove("is-unlocking");
+
+        void this.lockHandle.offsetWidth;
+
+        this.lockBody.classList.add("is-unlocking");
+        this.lockHandle.classList.add("is-unlocking");
+
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 950);
+        });
+    }
+
+    redirectToDashboard(delay = 250) {
         window.setTimeout(() => {
             window.location.href = "index.html";
-        }, 1200);
+        }, delay);
     }
 
     redirectWithPasswordLogin() {
