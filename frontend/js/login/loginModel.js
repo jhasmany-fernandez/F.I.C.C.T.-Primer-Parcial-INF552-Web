@@ -52,21 +52,27 @@ export class LoginModel {
     }
 
     async validateAccessCode(code) {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+
         const response = await fetch("/api/access-code/validate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ code })
+            body: JSON.stringify({ code }),
+            signal: controller.signal
         });
 
+        window.clearTimeout(timeoutId);
         const result = await response.json();
         return { response, result };
     }
 
     async getBiometricAccessStatus() {
-        const response = await fetch("/api/biometric-access/status", {
+        const response = await fetch(`/api/biometric-access/status?_t=${Date.now()}`, {
             method: "GET",
+            cache: "no-store",
             headers: {
                 "Content-Type": "application/json"
             }

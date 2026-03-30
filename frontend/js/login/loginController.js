@@ -3,18 +3,26 @@ export class LoginController {
         this.model = model;
         this.view = view;
         this.biometricAccessHandled = false;
+        this.isValidatingPin = false;
+        this.pinValidationWatchdog = null;
     }
 
     initialize() {
         this.view.updateCameraToggle(false);
         this.view.updateKeypadDisplay("");
-        this.view.updateKeypadResult(null, "Ingresa el PIN temporal");
+        this.view.updateKeypadResult("pending", "Esperando huella o PIN");
+        this.view.updateBiometricIndicator?.(
+            "is-waiting",
+            "Estado biométrico: esperando",
+            "Aún no llega autorización desde la app."
+        );
+        this.view.setFeedback("info", "Sistema listo", "Esperando autorización por huella/facial o ingreso de PIN.");
         this.view.bind(this);
         this.startBiometricStatusPolling();
     }
 
     startBiometricStatusPolling() {
-        window.setInterval(async () => {
+        const checkBiometricStatus = async () => {
             if (this.biometricAccessHandled) {
                 return;
             }
@@ -23,6 +31,12 @@ export class LoginController {
                 const { response, result } = await this.model.getBiometricAccessStatus();
 
                 if (!response.ok || !result.active) {
+                    this.view.updateBiometricIndicator?.(
+                        "is-waiting",
+                        "Estado biométrico: esperando",
+                        "Sin autorización activa. Puedes usar huella en la app o ingresar PIN."
+                    );
+                    this.view.updateKeypadResult("pending", "Esperando huella o PIN");
                     return;
                 }
 
@@ -37,13 +51,35 @@ export class LoginController {
                         ? "La chapa inteligente recibió autorización por reconocimiento facial desde la app móvil."
                         : "La chapa inteligente recibió autorización por huella dactilar desde la app móvil."
                 );
-                this.view.updateKeypadResult("success", methodLabel);
+                this.view.updateBiometricIndicator?.(
+                    "is-active",
+                    result.method === "face" ? "Estado biométrico: rostro activo" : "Estado biométrico: huella activa",
+                    "Autorización biométrica recibida. Abriendo acceso..."
+                );
+                this.view.updateKeypadResult(
+                    "success",
+                    result.method === "face" ? "Rostro activo - acceso" : "Huella activa - acceso"
+                );
                 await this.view.playUnlockAnimation();
                 this.view.redirectToDashboard();
-            } catch (_error) {
-                // Silent polling; the page should keep working even if the backend check fails temporarily.
+            } catch (error) {
+                this.view.updateKeypadResult("error", "Sin conexión");
+                this.view.updateBiometricIndicator?.(
+                    "is-error",
+                    "Estado biométrico: error",
+                    "No se pudo consultar el estado en backend."
+                );
+                this.view.setFeedback(
+                    "warning",
+                    "No se pudo consultar estado biométrico",
+                    error?.message || "La página no logró consultar /api/biometric-access/status."
+                );
             }
-        }, 3000);
+        };
+
+        // Verificación inmediata para evitar esperar 3s tras abrir la página.
+        checkBiometricStatus();
+        window.setInterval(checkBiometricStatus, 3000);
     }
 
     async startCamera() {
@@ -185,6 +221,10 @@ export class LoginController {
     }
 
     async submitKeypadCode() {
+        if (this.isValidatingPin) {
+            return;
+        }
+
         const code = this.model.getKeypadBuffer();
 
         if (code.length !== 6) {
@@ -193,8 +233,19 @@ export class LoginController {
             return;
         }
 
+        this.isValidatingPin = true;
         this.view.updateKeypadResult("pending", "Validando...");
         this.view.setFeedback("info", "Validando PIN", "Comprobando el código temporal contra el backend compartido.");
+
+        this.pinValidationWatchdog = window.setTimeout(() => {
+            this.isValidatingPin = false;
+            this.view.updateKeypadResult("error", "Tiempo agotado");
+            this.view.setFeedback(
+                "error",
+                "Sin respuesta del servidor",
+                "La validación tardó demasiado. Recarga la página y vuelve a intentar."
+            );
+        }, 15000);
 
         try {
             const { response, result } = await this.model.validateAccessCode(code);
@@ -211,7 +262,16 @@ export class LoginController {
             this.view.redirectToDashboard();
         } catch (error) {
             this.view.updateKeypadResult("error", "PIN incorrecto");
-            this.view.setFeedback("error", "Acceso rechazado", error.message || "El código ingresado no es válido.");
+            const message = error?.name === "AbortError"
+                ? "La validación tardó demasiado. Verifica conexión a internet y backend."
+                : (error.message || "El código ingresado no es válido.");
+            this.view.setFeedback("error", "Acceso rechazado", message);
+        } finally {
+            this.isValidatingPin = false;
+            if (this.pinValidationWatchdog) {
+                window.clearTimeout(this.pinValidationWatchdog);
+                this.pinValidationWatchdog = null;
+            }
         }
     }
 

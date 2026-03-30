@@ -6,22 +6,20 @@
     <title>Smart Lock Access - FICCT</title>
     <link rel="icon" type="image/png" href="assets/Escudo_FICCT.png">
     <script>if(localStorage.getItem("daynight-theme")==="carbon"){document.documentElement.classList.add("carbon");}</script>
-    <link rel="stylesheet" href="templatemo-daynight-style.css">
-    <link rel="stylesheet" href="smart-lock.css">
+    <link rel="stylesheet" href="templatemo-daynight-style.css?v=20260330-10">
+    <link rel="stylesheet" href="smart-lock.css?v=20260330-10">
 </head>
 <body>
     <div class="lock-page">
         <div class="lock-shell">
             <section class="lock-stage">
                 <div class="lock-brand">
-                    <div class="lock-brand-mark" aria-hidden="true">
-                        <img class="lock-brand-icon" src="assets/Escudo_FICCT.png" alt="Escudo FICCT">
-                    </div>
                     <div>
                         <span class="lock-brand-title">FICCT Smart Access</span>
                         <p class="lock-brand-copy">Prototipo visual de chapa inteligente para control de acceso.</p>
                     </div>
                 </div>
+                <div class="ui-version-badge">UI v10</div>
 
                 <div class="lock-stage-copy">
                     <span class="lock-chip">Acceso multimodal</span>
@@ -30,6 +28,17 @@
                         La interfaz representa una cerradura inteligente con teclado, lector biométrico,
                         desbloqueo con tarjeta, llave física y gestión desde aplicación.
                     </p>
+                </div>
+
+                <div class="auth-success auth-feedback is-hidden lock-feedback" id="loginFeedback">
+                    <strong id="feedbackTitle">Estado de acceso</strong>
+                    <p id="feedbackMessage">Esperando interacción.</p>
+                </div>
+
+                <div class="biometric-indicator is-waiting" id="biometricIndicator">
+                    <span class="biometric-dot" id="biometricDot"></span>
+                    <strong id="biometricIndicatorTitle">Estado biométrico: esperando</strong>
+                    <span id="biometricIndicatorText">Aún no llega autorización desde la app.</span>
                 </div>
 
                 <div class="smart-lock-showcase">
@@ -116,7 +125,7 @@
     </div>
 
     <canvas id="captureCanvas" class="capture-canvas"></canvas>
-    <script src="templatemo-daynight-script.js"></script>
-    <script type="module" src="login.js"></script>
+    <script src="templatemo-daynight-script.js?v=20260330-10"></script>
+    <script type="module" src="login.js?v=20260330-10"></script>
 </body>
 </html>

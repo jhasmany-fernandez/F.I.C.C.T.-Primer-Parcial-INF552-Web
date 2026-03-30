@@ -19,6 +19,10 @@ export class LoginView {
         this.keypadResetButton = document.getElementById("keypadResetButton");
         this.lockBody = document.querySelector(".lock-body");
         this.lockHandle = document.querySelector(".lock-handle");
+        this.biometricIndicator = document.getElementById("biometricIndicator");
+        this.biometricIndicatorTitle = document.getElementById("biometricIndicatorTitle");
+        this.biometricIndicatorText = document.getElementById("biometricIndicatorText");
+        this.ringFinger = document.querySelector(".ring-item.ring-finger");
     }
 
     bind(controller) {
@@ -126,6 +130,21 @@ export class LoginView {
             this.keypadResult.classList.add(`is-${state}`);
         }
         this.keypadResult.textContent = message;
+    }
+
+    updateBiometricIndicator(state, title, message) {
+        if (!this.biometricIndicator || !this.biometricIndicatorTitle || !this.biometricIndicatorText) {
+            return;
+        }
+
+        this.biometricIndicator.classList.remove("is-waiting", "is-active", "is-error");
+        this.biometricIndicator.classList.add(state || "is-waiting");
+        this.biometricIndicatorTitle.textContent = title;
+        this.biometricIndicatorText.textContent = message;
+
+        if (this.ringFinger) {
+            this.ringFinger.classList.toggle("is-active", state === "is-active");
+        }
     }
 
     async playUnlockAnimation() {

@@ -114,12 +114,12 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && requestUrl.pathname === "/api/biometric-access/authorize") {
-    await handleAuthorizeBiometricAccess(request, response);
+    await handleAuthorizeBiometricAccess(request, response, ensureDatabase);
     return;
   }
 
   if (request.method === "GET" && requestUrl.pathname === "/api/biometric-access/status") {
-    await handleBiometricAccessStatus(response);
+    await handleBiometricAccessStatus(response, ensureDatabase);
     return;
   }
 

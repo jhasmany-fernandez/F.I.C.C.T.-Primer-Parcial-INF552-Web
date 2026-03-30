@@ -1674,11 +1674,18 @@ tr:hover td {
     content: "";
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-        url("assets/ficct-background.jpg") center/cover;
-    opacity: 0.18;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    opacity: 0.08;
     pointer-events: none;
+}
+
+.login-page .logo-icon {
+    background: #ffffff url("assets/Escudo_FICCT.png") center/78% no-repeat;
+    border-radius: 10px;
+}
+
+.login-page .logo-icon svg {
+    display: none;
 }
 
 .login-shell {

@@ -17,9 +17,11 @@ body {
     margin: 0;
     min-height: 100vh;
     background:
-        linear-gradient(rgba(5, 13, 24, 0.78), rgba(8, 18, 34, 0.84)),
-        url("assets/ficct-page-background.jpg") center center / cover no-repeat fixed;
+        radial-gradient(1200px 600px at 10% -10%, rgba(64, 123, 255, 0.18), transparent 55%),
+        radial-gradient(900px 500px at 95% 10%, rgba(221, 31, 49, 0.14), transparent 60%),
+        linear-gradient(rgba(5, 13, 24, 0.9), rgba(8, 18, 34, 0.94));
     color: var(--lock-text);
+    overflow-x: hidden;
 }
 
 .lock-page {
@@ -40,36 +42,51 @@ body {
 }
 
 .lock-stage {
+    position: relative;
     min-height: calc(100vh - 56px);
     padding: 28px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+}
+
+.lock-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(4, 10, 18, 0.24), rgba(4, 10, 18, 0.12));
+    pointer-events: none;
+}
+
+.lock-brand,
+.lock-stage-copy,
+.lock-feedback,
+.biometric-indicator,
+.smart-lock-showcase {
+    position: relative;
+    z-index: 1;
 }
 
 .lock-brand {
     display: flex;
     align-items: center;
-    gap: 14px;
     margin-bottom: 22px;
 }
 
-.lock-brand-mark {
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 14px 36px rgba(7, 17, 31, 0.32);
-    overflow: hidden;
-}
-
-.lock-brand-icon {
-    width: 40px;
-    height: 40px;
-    display: block;
-    object-fit: contain;
+.ui-version-badge {
+    position: absolute;
+    top: 26px;
+    right: 26px;
+    z-index: 2;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(124, 194, 255, 0.45);
+    background: rgba(16, 52, 96, 0.55);
+    color: #d9ecff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
 }
 
 .lock-brand-title {
@@ -123,6 +140,98 @@ body {
     color: rgba(255, 255, 255, 0.76);
     font-size: 1.02rem;
     line-height: 1.7;
+}
+
+.lock-feedback {
+    margin-top: 16px;
+    margin-bottom: 4px;
+    max-width: 760px;
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+}
+
+.lock-feedback strong {
+    color: #eaf3ff;
+}
+
+.lock-feedback p {
+    color: rgba(234, 243, 255, 0.88);
+}
+
+.lock-feedback.is-error {
+    border-color: rgba(255, 118, 140, 0.45);
+    background: rgba(122, 16, 33, 0.38);
+}
+
+.lock-feedback.is-warning {
+    border-color: rgba(237, 179, 74, 0.4);
+    background: rgba(116, 82, 14, 0.36);
+}
+
+.lock-feedback.is-info {
+    border-color: rgba(116, 176, 255, 0.44);
+    background: rgba(23, 62, 118, 0.38);
+}
+
+.biometric-indicator {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(120, 173, 255, 0.42);
+    background: rgba(23, 62, 118, 0.42);
+    color: #eaf3ff;
+}
+
+.biometric-indicator strong {
+    font-size: 0.9rem;
+}
+
+.biometric-indicator span {
+    font-size: 0.84rem;
+}
+
+.biometric-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #8ebcff;
+    box-shadow: 0 0 0 6px rgba(142, 188, 255, 0.2);
+}
+
+.biometric-indicator.is-active {
+    border-color: rgba(120, 255, 174, 0.55);
+    background: rgba(17, 109, 61, 0.45);
+}
+
+.biometric-indicator.is-active .biometric-dot {
+    background: #7bffad;
+    box-shadow: 0 0 0 8px rgba(123, 255, 173, 0.28);
+    animation: biometricPulse 1s ease-in-out infinite;
+}
+
+.biometric-indicator.is-error {
+    border-color: rgba(255, 118, 140, 0.55);
+    background: rgba(122, 16, 33, 0.45);
+}
+
+.biometric-indicator.is-error .biometric-dot {
+    background: #ff8ea4;
+    box-shadow: 0 0 0 8px rgba(255, 142, 164, 0.24);
+}
+
+.ring-item.ring-finger.is-active {
+    border-color: rgba(71, 193, 120, 0.9);
+    background: rgba(190, 255, 214, 0.95);
+    box-shadow: 0 0 0 10px rgba(123, 255, 173, 0.25);
+}
+
+@keyframes biometricPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+    100% { transform: scale(1); }
 }
 
 .smart-lock-showcase {
