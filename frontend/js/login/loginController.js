@@ -18,16 +18,6 @@ export class LoginController {
         );
         this.view.setFeedback("info", "Sistema listo", "Esperando autorización por huella/facial o ingreso de PIN.");
         this.view.bind(this);
-
-        if (typeof window.hasRecentLogoutCooldown === "function" && window.hasRecentLogoutCooldown()) {
-            this.view.setFeedback(
-                "info",
-                "Sesion cerrada",
-                "El acceso automatico fue pausado temporalmente despues del cierre de sesion."
-            );
-            return;
-        }
-
         this.startBiometricStatusPolling();
     }
 

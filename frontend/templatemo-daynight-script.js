@@ -275,6 +275,76 @@ function redirectToLoginIfLoggedOut() {
     window.location.href = 'login.html';
 }
 
+function isAndroidDevice() {
+    return /android/i.test(window.navigator.userAgent || '');
+}
+
+function tryOpenUrl(targetUrl) {
+    if (!targetUrl) {
+        return;
+    }
+
+    window.location.href = targetUrl;
+}
+
+function openAppLogoutWithFallback(result, fallbackUrl) {
+    const resolvedFallback = result?.fallbackUrl || `/${fallbackUrl.replace(/^\//, '')}`;
+    const androidIntentUrl = result?.androidIntentUrl || '';
+    const appUrl = result?.appUrl || '';
+    let pageHidden = false;
+
+    const visibilityHandler = () => {
+        pageHidden = document.visibilityState === 'hidden';
+    };
+
+    document.addEventListener('visibilitychange', visibilityHandler, { passive: true });
+
+    const cleanup = () => {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+    };
+
+    window.setTimeout(() => {
+        if (pageHidden) {
+            cleanup();
+            return;
+        }
+
+        if (isAndroidDevice() && androidIntentUrl) {
+            tryOpenUrl(androidIntentUrl);
+
+            window.setTimeout(() => {
+                if (pageHidden) {
+                    cleanup();
+                    return;
+                }
+
+                if (appUrl) {
+                    tryOpenUrl(appUrl);
+                }
+
+                window.setTimeout(() => {
+                    cleanup();
+                    if (!pageHidden) {
+                        window.location.href = resolvedFallback;
+                    }
+                }, 900);
+            }, 700);
+            return;
+        }
+
+        if (appUrl) {
+            tryOpenUrl(appUrl);
+        }
+
+        window.setTimeout(() => {
+            cleanup();
+            if (!pageHidden) {
+                window.location.href = resolvedFallback;
+            }
+        }, 900);
+    }, 0);
+}
+
 window.setWebSessionState = setWebSessionState;
 window.getWebSessionState = getWebSessionState;
 window.markLogoutInProgress = markLogoutInProgress;
@@ -330,15 +400,25 @@ async function handleLogoutToApp(event, options = {}) {
             }
         }).catch(() => null);
 
+        await fetch('/api/mobile-session/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                allActive: !userId && !registro,
+                reason: reason || 'logout_from_web',
+                registro: registro || null,
+                source: source || 'web-dashboard',
+                userId: userId || null
+            })
+        }).catch(() => null);
+
         markLogoutInProgress();
         localStorage.removeItem('smartaccess-user-id');
         localStorage.removeItem('smartaccess-registro');
 
-        window.setTimeout(() => {
-            window.location.href = result.fallbackUrl || `/${fallbackUrl.replace(/^\//, '')}`;
-        }, 1200);
-
-        window.location.href = result.appUrl;
+        openAppLogoutWithFallback(result, fallbackUrl);
     } catch (error) {
         window.location.href = fallbackUrl;
     }

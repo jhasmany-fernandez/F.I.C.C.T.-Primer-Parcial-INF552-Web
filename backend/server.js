@@ -11,6 +11,11 @@ const {
 } = require("./controllers/accessCodeController");
 const { handleFaceLogin, handlePasswordLogin } = require("./controllers/authController");
 const { handleHealth } = require("./controllers/healthController");
+const {
+  handleActivateMobileSession,
+  handleInvalidateMobileSession,
+  handleMobileSessionStatus,
+} = require("./controllers/mobileSessionController");
 const { handleCreateReport } = require("./controllers/reportController");
 const { handleAppLogoutConfig, handleLogoutSession } = require("./controllers/sessionController");
 const {
@@ -166,6 +171,21 @@ const server = http.createServer(async (request, response) => {
 
   if (request.method === "POST" && requestUrl.pathname === "/api/session/logout") {
     await handleLogoutSession(response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/mobile-session/activate") {
+    await handleActivateMobileSession(request, response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/mobile-session/logout") {
+    await handleInvalidateMobileSession(request, response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/mobile-session/status") {
+    await handleMobileSessionStatus(requestUrl, response, ensureDatabase);
     return;
   }
 
