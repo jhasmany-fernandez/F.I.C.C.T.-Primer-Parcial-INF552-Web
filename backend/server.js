@@ -12,6 +12,7 @@ const {
 const { handleFaceLogin, handlePasswordLogin } = require("./controllers/authController");
 const { handleHealth } = require("./controllers/healthController");
 const { handleCreateReport } = require("./controllers/reportController");
+const { handleAppLogoutConfig, handleLogoutSession } = require("./controllers/sessionController");
 const {
   handleBulkSaveUsers,
   handleCreateUser,
@@ -155,6 +156,16 @@ const server = http.createServer(async (request, response) => {
 
   if (request.method === "POST" && requestUrl.pathname === "/api/reports") {
     await handleCreateReport(request, response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/session/logout-app") {
+    await handleAppLogoutConfig(requestUrl, response);
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/session/logout") {
+    await handleLogoutSession(response, ensureDatabase);
     return;
   }
 

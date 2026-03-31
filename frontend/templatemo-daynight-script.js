@@ -220,6 +220,130 @@ function closeMobileMenu() {
     }
 }
 
+// ===== Logout to App =====
+function setWebSessionState(isAuthenticated, extra = {}) {
+    const payload = {
+        authenticated: Boolean(isAuthenticated),
+        updatedAt: new Date().toISOString(),
+        ...extra
+    };
+
+    if (payload.authenticated) {
+        localStorage.removeItem('smartaccess-last-logout-at');
+    }
+
+    localStorage.setItem('smartaccess-session', JSON.stringify(payload));
+}
+
+function getWebSessionState() {
+    try {
+        return JSON.parse(localStorage.getItem('smartaccess-session') || 'null');
+    } catch (error) {
+        return null;
+    }
+}
+
+function markLogoutInProgress() {
+    localStorage.setItem('smartaccess-last-logout-at', new Date().toISOString());
+    setWebSessionState(false, { reason: 'logout' });
+}
+
+function hasRecentLogoutCooldown() {
+    const rawValue = localStorage.getItem('smartaccess-last-logout-at');
+    if (!rawValue) {
+        return false;
+    }
+
+    const logoutTime = new Date(rawValue).getTime();
+    if (!Number.isFinite(logoutTime)) {
+        return false;
+    }
+
+    return (Date.now() - logoutTime) < 120000;
+}
+
+function isWebSessionActive() {
+    const session = getWebSessionState();
+    return Boolean(session?.authenticated);
+}
+
+function redirectToLoginIfLoggedOut() {
+    if (window.location.pathname.endsWith('login.html') || window.location.pathname === '/' || isWebSessionActive()) {
+        return;
+    }
+
+    window.location.href = 'login.html';
+}
+
+window.setWebSessionState = setWebSessionState;
+window.getWebSessionState = getWebSessionState;
+window.markLogoutInProgress = markLogoutInProgress;
+window.hasRecentLogoutCooldown = hasRecentLogoutCooldown;
+window.isWebSessionActive = isWebSessionActive;
+window.redirectToLoginIfLoggedOut = redirectToLoginIfLoggedOut;
+
+async function handleLogoutToApp(event, options = {}) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    const fallbackUrl = options.fallbackUrl || 'login.html';
+    const screen = options.screen || window.location.pathname.split('/').pop() || 'index.html';
+    const source = options.source || 'web-dashboard';
+    const reason = options.reason || 'user_requested';
+    const userId = options.userId || localStorage.getItem('smartaccess-user-id') || '';
+    const registro = options.registro || localStorage.getItem('smartaccess-registro') || '';
+
+    try {
+        const query = new URLSearchParams({
+            fallbackUrl: `/${fallbackUrl.replace(/^\//, '')}`,
+            reason,
+            screen,
+            source
+        });
+
+        if (userId) {
+            query.set('userId', userId);
+        }
+
+        if (registro) {
+            query.set('registro', registro);
+        }
+
+        const response = await fetch(`/api/session/logout-app?${query.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('No se pudo obtener la configuración de cierre de sesión.');
+        }
+
+        const result = await response.json();
+
+        await fetch('/api/session/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).catch(() => null);
+
+        markLogoutInProgress();
+        localStorage.removeItem('smartaccess-user-id');
+        localStorage.removeItem('smartaccess-registro');
+
+        window.setTimeout(() => {
+            window.location.href = result.fallbackUrl || `/${fallbackUrl.replace(/^\//, '')}`;
+        }, 1200);
+
+        window.location.href = result.appUrl;
+    } catch (error) {
+        window.location.href = fallbackUrl;
+    }
+}
+
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', function() {
     initTheme();
@@ -237,5 +361,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.querySelector('.mobile-menu-overlay');
     if (overlay) {
         overlay.addEventListener('click', closeMobileMenu);
+    }
+
+    document.querySelectorAll('[data-logout-to-app]').forEach((element) => {
+        element.addEventListener('click', (event) => {
+            handleLogoutToApp(event, {
+                fallbackUrl: element.dataset.logoutFallback || 'login.html',
+                reason: element.dataset.logoutReason || 'user_requested',
+                screen: element.dataset.logoutScreen || (window.location.pathname.split('/').pop() || 'index.html'),
+                source: element.dataset.logoutSource || 'web-dashboard'
+            });
+        });
+    });
+
+    if (document.body.dataset.requiresSession === 'true') {
+        redirectToLoginIfLoggedOut();
     }
 });

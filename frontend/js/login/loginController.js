@@ -18,6 +18,16 @@ export class LoginController {
         );
         this.view.setFeedback("info", "Sistema listo", "Esperando autorización por huella/facial o ingreso de PIN.");
         this.view.bind(this);
+
+        if (typeof window.hasRecentLogoutCooldown === "function" && window.hasRecentLogoutCooldown()) {
+            this.view.setFeedback(
+                "info",
+                "Sesion cerrada",
+                "El acceso automatico fue pausado temporalmente despues del cierre de sesion."
+            );
+            return;
+        }
+
         this.startBiometricStatusPolling();
     }
 
@@ -60,6 +70,10 @@ export class LoginController {
                     "success",
                     result.method === "face" ? "Rostro activo - acceso" : "Huella activa - acceso"
                 );
+                window.setWebSessionState?.(true, {
+                    method: result.method,
+                    reason: "biometric",
+                });
                 await this.view.playUnlockAnimation();
                 this.view.redirectToDashboard();
             } catch (error) {
@@ -170,6 +184,10 @@ export class LoginController {
                 `${result.message || "Reconocimiento facial exitoso."}${similarityText}`
             );
             this.view.updateKeypadResult("success", "Rostro validado");
+            window.setWebSessionState?.(true, {
+                method: "face",
+                reason: "face_login",
+            });
             await this.view.playUnlockAnimation();
             this.view.redirectToDashboard();
         } catch (error) {
@@ -258,6 +276,10 @@ export class LoginController {
             this.view.setFeedback(null, "Acceso permitido", result.message || "Código temporal válido.");
             this.model.clearKeypadBuffer();
             this.view.updateKeypadDisplay("");
+            window.setWebSessionState?.(true, {
+                method: "pin",
+                reason: "access_code",
+            });
             await this.view.playUnlockAnimation();
             this.view.redirectToDashboard();
         } catch (error) {
@@ -277,6 +299,10 @@ export class LoginController {
 
     handlePasswordLogin(event) {
         event.preventDefault();
+        window.setWebSessionState?.(true, {
+            method: "password-demo",
+            reason: "password_login",
+        });
         this.view.setFeedback("info", "Acceso por contraseña habilitado", "Entrando al dashboard sin validación de credenciales en esta versión de prueba.");
         this.view.redirectWithPasswordLogin();
     }

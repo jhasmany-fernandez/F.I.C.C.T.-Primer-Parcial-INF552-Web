@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="templatemo-daynight-style.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body data-requires-session="true">
     <div class="mobile-menu-overlay"></div>
 
     <div class="mobile-menu">
@@ -39,7 +39,15 @@
             <a href="settings.html">Configuración</a>
         </nav>
         <div class="mobile-menu-footer">
-            <a href="login.html" class="mobile-logout-btn">Cerrar sesión</a>
+            <a
+                href="login.html"
+                class="mobile-logout-btn"
+                data-logout-to-app
+                data-logout-fallback="login.html"
+                data-logout-reason="user_requested"
+                data-logout-screen="index.html"
+                data-logout-source="web-dashboard-mobile"
+            >Cerrar sesión</a>
             <div class="theme-toggle">
                 <button class="theme-btn theme-btn-snow active" onclick="setTheme('snow')" title="Snow Edition">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -115,7 +123,16 @@
                         <div class="user-avatar">F</div>
                         <span class="user-name">FICCT</span>
                     </button>
-                    <a href="login.html" class="btn-logout" title="Cerrar sesión">
+                    <a
+                        href="login.html"
+                        class="btn-logout"
+                        title="Cerrar sesión"
+                        data-logout-to-app
+                        data-logout-fallback="login.html"
+                        data-logout-reason="user_requested"
+                        data-logout-screen="index.html"
+                        data-logout-source="web-dashboard"
+                    >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
