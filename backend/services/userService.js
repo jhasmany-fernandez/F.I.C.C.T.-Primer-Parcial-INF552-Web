@@ -51,8 +51,49 @@ function inferRoleFromSheetName(sheetName) {
   return "Sin asignar";
 }
 
+function splitFullName(fullName) {
+  const normalized = cleanValue(fullName);
+  if (!normalized) {
+    return {
+      apellido: "",
+      nombre: "",
+    };
+  }
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return {
+      apellido: parts[0],
+      nombre: parts[0],
+    };
+  }
+
+  if (parts.length === 2) {
+    return {
+      apellido: parts[0],
+      nombre: parts[1],
+    };
+  }
+
+  const splitIndex = Math.ceil(parts.length / 2);
+  return {
+    apellido: parts.slice(0, splitIndex).join(" "),
+    nombre: parts.slice(splitIndex).join(" "),
+  };
+}
+
 function mapExcelUserRows(rows, sheetName) {
   const headerCandidates = {
+    docente: ["docente"],
+    grupo: ["gr"],
+    lunes: ["lunes"],
+    martes: ["martes"],
+    materia: ["materia"],
+    miercoles: ["miercoles"],
+    jueves: ["jueves"],
+    viernes: ["viernes"],
+    sabado: ["sabado"],
+    sigla: ["sigla"],
     apellido: ["apellido", "apellidos"],
     correo: ["correo", "correo institucional", "correo electronico", "email"],
     nombre: ["nombre", "nombres"],
@@ -78,12 +119,19 @@ function mapExcelUserRows(rows, sheetName) {
         }
       }
 
+      if ((!mapped.nombre || !mapped.apellido) && mapped.docente) {
+        const parsedName = splitFullName(mapped.docente);
+        mapped.nombre = mapped.nombre || parsedName.nombre;
+        mapped.apellido = mapped.apellido || parsedName.apellido;
+      }
+
       return {
         ...mapped,
+        docente: mapped.docente || [mapped.apellido, mapped.nombre].filter(Boolean).join(" "),
         rol: inferredRole,
       };
     })
-    .filter((row) => row.nombre || row.apellido || row.registro || row.correo);
+    .filter((row) => row.nombre || row.apellido || row.registro || row.correo || row.sigla || row.materia);
 }
 
 function validateUserPayload(payload) {
@@ -172,6 +220,7 @@ module.exports = {
   hashPassword,
   isTemporaryPassword,
   mapExcelUserRows,
+  splitFullName,
   TEMPORARY_PASSWORD,
   verifyPassword,
   validatePasswordUpdatePayload,

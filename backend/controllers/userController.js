@@ -3,7 +3,12 @@ const path = require("path");
 const xlsx = require("xlsx");
 const {
   query,
+  withTransaction,
 } = require("../models/databaseModel");
+const {
+  upsertHorario,
+  upsertMateria,
+} = require("../models/academicModel");
 const {
   SYSTEM_ADMIN,
   findExistingUsersByRegistro,
@@ -240,22 +245,72 @@ async function handleBulkSaveUsers(request, response, ensureDatabase) {
       return;
     }
 
-    const results = [];
-    for (const importedUser of users) {
-      results.push(await upsertImportedUser(importedUser, buildImportedUserPayload, hashPassword));
-    }
+    const results = await withTransaction(async (client) => {
+      const persistedRows = [];
+
+      for (const importedUser of users) {
+        const persistedUser = await upsertImportedUser(
+          importedUser,
+          buildImportedUserPayload,
+          hashPassword,
+          client
+        );
+        const userId = persistedUser.user?.id;
+
+        if (!userId) {
+          persistedRows.push({
+            action: persistedUser.action,
+            horario: null,
+            materia: null,
+            reason: persistedUser.reason,
+            user: persistedUser.user,
+          });
+          continue;
+        }
+
+        const materia = await upsertMateria(client, {
+          docenteId: userId,
+          grupo: cleanValue(importedUser.grupo),
+          nombreMateria: cleanValue(importedUser.materia),
+          sigla: cleanValue(importedUser.sigla),
+        });
+
+        const horario = await upsertHorario(client, {
+          jueves: cleanValue(importedUser.jueves),
+          lunes: cleanValue(importedUser.lunes),
+          materiaId: materia.id,
+          martes: cleanValue(importedUser.martes),
+          miercoles: cleanValue(importedUser.miercoles),
+          sabado: cleanValue(importedUser.sabado),
+          viernes: cleanValue(importedUser.viernes),
+        });
+
+        persistedRows.push({
+          action: persistedUser.action,
+          horario,
+          materia,
+          reason: persistedUser.reason,
+          user: persistedUser.user,
+        });
+      }
+
+      return persistedRows;
+    });
 
     sendJson(response, 200, {
       success: true,
-      message: "Usuarios importados guardados en PostgreSQL.",
+      message: "Usuarios, materias y horarios fueron importados en PostgreSQL.",
       created: results.filter((item) => item.action === "created").length,
+      updated: results.filter((item) => item.action === "updated").length,
       skipped: results.filter((item) => item.action === "skipped").length,
       users: results.map((item) => item.user),
+      materias: results.map((item) => item.materia).filter(Boolean),
+      horarios: results.map((item) => item.horario).filter(Boolean),
     });
   } catch (error) {
     sendJson(response, 500, {
       success: false,
-      error: "No se pudieron guardar los usuarios importados.",
+      error: "No se pudieron guardar los usuarios importados con sus materias y horarios.",
       message: error.message,
     });
   }
