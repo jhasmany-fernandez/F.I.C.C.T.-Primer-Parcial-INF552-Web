@@ -126,9 +126,6 @@ App/app/build/
 
 # Local data preparation and import helpers
 scripts/
-*.xlsx
-*.xls
-
 # Keep repository essentials
 !.gitignore
 !README.md
