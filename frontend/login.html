@@ -21,102 +21,92 @@
                 </div>
                 <div class="ui-version-badge">UI v10</div>
 
-                <div class="lock-stage-copy">
-                    <span class="lock-chip">Acceso multimodal</span>
-                    <h1>Chapa inteligente dibujada para simular acceso institucional</h1>
-                    <p>
-                        La interfaz representa una cerradura inteligente con teclado, lector biométrico,
-                        desbloqueo con tarjeta, llave física y gestión desde aplicación.
-                    </p>
-                </div>
-
-                <div class="auth-success auth-feedback is-hidden lock-feedback" id="loginFeedback">
-                    <strong id="feedbackTitle">Estado de acceso</strong>
-                    <p id="feedbackMessage">Esperando interacción.</p>
-                </div>
-
-                <div class="biometric-indicator is-waiting" id="biometricIndicator">
-                    <span class="biometric-dot" id="biometricDot"></span>
-                    <strong id="biometricIndicatorTitle">Estado biométrico: esperando</strong>
-                    <span id="biometricIndicatorText">Aún no llega autorización desde la app.</span>
-                </div>
-
-                <div class="smart-lock-showcase">
-                    <div class="door-panel">
-                        <div class="door-line door-line-top"></div>
-                        <div class="door-line door-line-bottom"></div>
-
-                        <div class="lock-body">
-                            <div class="lock-screen">
-                                <div class="lock-pin-status">
-                                    <small>PIN sincronizado con la app</small>
-                                    <strong id="keypadDisplay">_ _ _ _ _ _</strong>
-                                    <span id="keypadResult" class="keypad-result">Ingresa el PIN temporal</span>
-                                </div>
-                                <div class="lock-digits">
-                                    <button type="button" class="lock-key" data-key="1">1</button>
-                                    <button type="button" class="lock-key" data-key="2">2</button>
-                                    <button type="button" class="lock-key" data-key="3">3</button>
-                                    <button type="button" class="lock-key" data-key="4">4</button>
-                                    <button type="button" class="lock-key" data-key="5">5</button>
-                                    <button type="button" class="lock-key" data-key="6">6</button>
-                                    <button type="button" class="lock-key" data-key="7">7</button>
-                                    <button type="button" class="lock-key" data-key="8">8</button>
-                                    <button type="button" class="lock-key" data-key="9">9</button>
-                                    <button type="button" class="lock-key lock-key-action" id="keypadClearBtn" data-key="clear">*</button>
-                                    <button type="button" class="lock-key" data-key="0">0</button>
-                                    <button type="button" class="lock-key lock-key-action" id="keypadSubmitBtn" data-key="submit">#</button>
-                                </div>
-                            </div>
-                            <button type="button" class="keypad-reset-button" id="keypadResetButton">
-                                Borrar PIN
-                            </button>
-                            <div class="lock-card-tag">CARD</div>
-                            <div class="lock-handle">
-                                <div class="lock-hub"></div>
-                                <div class="lock-grip"></div>
-                            </div>
-                            <div class="lock-logo">FICCT</div>
+                <div class="lock-stage-layout">
+                    <div class="lock-stage-meta">
+                        <div class="lock-stage-copy">
+                            <span class="lock-chip">Acceso multimodal</span>
+                            <h1>Chapa inteligente dibujada para simular acceso institucional</h1>
+                            <p>
+                                La interfaz representa una cerradura inteligente con teclado, lector biométrico,
+                                desbloqueo con tarjeta, llave física y gestión desde aplicación.
+                            </p>
                         </div>
 
-                        <div class="access-ring">
-                            <div class="ring-track"></div>
-                            <div class="ring-item ring-card">
-                                <span class="ring-icon">▣</span>
-                                <span>Tarjeta</span>
+                        <div class="lock-copy-grid">
+                            <article class="lock-copy-card">
+                                <span class="lock-chip lock-chip-secondary">Sistema listo</span>
+                                <p>Esperando autorización por huella/facial o ingreso de PIN.</p>
+                            </article>
+
+                            <div class="auth-success auth-feedback is-hidden lock-feedback" id="loginFeedback">
+                                <strong id="feedbackTitle">Estado de acceso</strong>
+                                <p id="feedbackMessage">Esperando interacción.</p>
                             </div>
-                            <div class="ring-item ring-finger">
-                                <span class="ring-icon">◔</span>
-                                <span>Huella</span>
+
+                            <div class="biometric-indicator is-waiting" id="biometricIndicator">
+                                <span class="biometric-dot" id="biometricDot"></span>
+                                <strong id="biometricIndicatorTitle">Estado biométrico: esperando</strong>
+                                <span id="biometricIndicatorText">Sin autorización activa. Puedes usar huella en la app o ingresar PIN.</span>
                             </div>
-                            <div class="ring-item ring-pin">
-                                <span class="ring-icon">***</span>
-                                <span>PIN</span>
-                            </div>
-                            <div class="ring-item ring-app">
-                                <span class="ring-icon">⌁</span>
-                                <span>App</span>
-                            </div>
-                            <div class="ring-item ring-key">
-                                <span class="ring-icon">⚷</span>
-                                <span>Llave</span>
+
+                            <div class="lock-specs">
+                                <article>
+                                    <strong>PIN temporal</strong>
+                                    <p>La chapa valida el código de 6 dígitos generado desde la app móvil.</p>
+                                </article>
+                                <article>
+                                    <strong>Huella móvil</strong>
+                                    <p>La app autoriza el acceso biométrico por huella y la chapa recibe la validación.</p>
+                                </article>
                             </div>
                         </div>
                     </div>
 
-                    <div class="lock-specs">
-                        <article>
-                            <strong>PIN temporal</strong>
-                            <p>La chapa valida el código de 6 dígitos generado desde la app móvil.</p>
-                        </article>
-                        <article>
-                            <strong>Huella móvil</strong>
-                            <p>La app autoriza el acceso biométrico por huella y la chapa recibe la validación.</p>
-                        </article>
-                        <article>
-                            <strong>Reconocimiento facial</strong>
-                            <p>El backend procesa el rostro capturado y confirma la identidad para abrir el acceso.</p>
-                        </article>
+                    <div class="smart-lock-showcase">
+                        <div class="door-panel">
+                            <div class="door-line door-line-top"></div>
+                            <div class="door-line door-line-bottom"></div>
+
+                            <div class="lock-body">
+                                <div class="lock-screen">
+                                    <div class="lock-pin-status">
+                                        <small>PIN sincronizado con la app</small>
+                                        <strong id="keypadDisplay">_ _ _ _ _ _</strong>
+                                        <span id="keypadResult" class="keypad-result">Ingresa el PIN temporal</span>
+                                    </div>
+                                    <div class="lock-digits">
+                                        <button type="button" class="lock-key" data-key="1">1</button>
+                                        <button type="button" class="lock-key" data-key="2">2</button>
+                                        <button type="button" class="lock-key" data-key="3">3</button>
+                                        <button type="button" class="lock-key" data-key="4">4</button>
+                                        <button type="button" class="lock-key" data-key="5">5</button>
+                                        <button type="button" class="lock-key" data-key="6">6</button>
+                                        <button type="button" class="lock-key" data-key="7">7</button>
+                                        <button type="button" class="lock-key" data-key="8">8</button>
+                                        <button type="button" class="lock-key" data-key="9">9</button>
+                                        <button type="button" class="lock-key lock-key-action" id="keypadClearBtn" data-key="clear">*</button>
+                                        <button type="button" class="lock-key" data-key="0">0</button>
+                                        <button type="button" class="lock-key lock-key-action" id="keypadSubmitBtn" data-key="submit">#</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="keypad-reset-button" id="keypadResetButton">
+                                    Borrar PIN
+                                </button>
+                                <div class="lock-card-tag">CARD</div>
+                                <div class="lock-handle">
+                                    <div class="lock-hub"></div>
+                                    <div class="lock-grip"></div>
+                                </div>
+                                <div class="lock-logo">FICCT</div>
+                            </div>
+
+                        </div>
+                        <div class="lock-specs lock-specs-showcase">
+                            <article>
+                                <strong>Reconocimiento facial</strong>
+                                <p>El backend procesa el rostro capturado y confirma la identidad para abrir el acceso.</p>
+                            </article>
+                        </div>
                     </div>
                 </div>
             </section>

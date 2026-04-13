@@ -275,74 +275,9 @@ function redirectToLoginIfLoggedOut() {
     window.location.href = 'login.html';
 }
 
-function isAndroidDevice() {
-    return /android/i.test(window.navigator.userAgent || '');
-}
-
-function tryOpenUrl(targetUrl) {
-    if (!targetUrl) {
-        return;
-    }
-
-    window.location.href = targetUrl;
-}
-
 function openAppLogoutWithFallback(result, fallbackUrl) {
     const resolvedFallback = result?.fallbackUrl || `/${fallbackUrl.replace(/^\//, '')}`;
-    const androidIntentUrl = result?.androidIntentUrl || '';
-    const appUrl = result?.appUrl || '';
-    let pageHidden = false;
-
-    const visibilityHandler = () => {
-        pageHidden = document.visibilityState === 'hidden';
-    };
-
-    document.addEventListener('visibilitychange', visibilityHandler, { passive: true });
-
-    const cleanup = () => {
-        document.removeEventListener('visibilitychange', visibilityHandler);
-    };
-
-    window.setTimeout(() => {
-        if (pageHidden) {
-            cleanup();
-            return;
-        }
-
-        if (isAndroidDevice() && androidIntentUrl) {
-            tryOpenUrl(androidIntentUrl);
-
-            window.setTimeout(() => {
-                if (pageHidden) {
-                    cleanup();
-                    return;
-                }
-
-                if (appUrl) {
-                    tryOpenUrl(appUrl);
-                }
-
-                window.setTimeout(() => {
-                    cleanup();
-                    if (!pageHidden) {
-                        window.location.href = resolvedFallback;
-                    }
-                }, 900);
-            }, 700);
-            return;
-        }
-
-        if (appUrl) {
-            tryOpenUrl(appUrl);
-        }
-
-        window.setTimeout(() => {
-            cleanup();
-            if (!pageHidden) {
-                window.location.href = resolvedFallback;
-            }
-        }, 900);
-    }, 0);
+    window.location.href = resolvedFallback;
 }
 
 window.setWebSessionState = setWebSessionState;

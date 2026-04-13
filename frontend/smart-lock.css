@@ -106,6 +106,43 @@ body {
     max-width: 920px;
 }
 
+.lock-stage-layout {
+    position: relative;
+    z-index: 1;
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(540px, 0.95fr);
+    gap: 30px;
+    align-items: start;
+}
+
+.lock-stage-meta {
+    display: grid;
+    gap: 22px;
+    min-width: 0;
+}
+
+.lock-copy-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.lock-copy-card {
+    padding: 18px 20px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.lock-copy-card p {
+    margin: 14px 0 0;
+    max-width: none;
+    color: rgba(255, 255, 255, 0.88);
+}
+
 .lock-chip {
     display: inline-flex;
     align-items: center;
@@ -143,11 +180,16 @@ body {
 }
 
 .lock-feedback {
-    margin-top: 16px;
-    margin-bottom: 4px;
-    max-width: 760px;
+    margin-top: 0;
+    margin-bottom: 0;
+    max-width: none;
+    min-height: 112px;
+    padding: 18px 20px;
+    border: 1px solid rgba(116, 176, 255, 0.22);
+    background: rgba(10, 24, 46, 0.34);
     border-radius: 14px;
     backdrop-filter: blur(8px);
+    box-sizing: border-box;
 }
 
 .lock-feedback strong {
@@ -174,15 +216,18 @@ body {
 }
 
 .biometric-indicator {
-    margin-top: 10px;
-    display: inline-flex;
+    margin-top: 0;
+    min-height: 112px;
+    display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    border-radius: 999px;
+    padding: 16px 18px;
+    border-radius: 24px;
     border: 1px solid rgba(120, 173, 255, 0.42);
     background: rgba(23, 62, 118, 0.42);
     color: #eaf3ff;
+    box-sizing: border-box;
+    flex-wrap: wrap;
 }
 
 .biometric-indicator strong {
@@ -235,10 +280,9 @@ body {
 }
 
 .smart-lock-showcase {
-    margin-top: 36px;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 22px;
+    gap: 18px;
     align-items: start;
 }
 
@@ -543,11 +587,16 @@ body {
 
 .lock-specs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 16px;
     width: 100%;
-    max-width: 980px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
+    grid-column: 1 / -1;
+}
+
+.lock-specs-showcase {
+    width: min(100%, 980px);
 }
 
 .lock-specs article {
@@ -731,6 +780,10 @@ body {
 }
 
 @media (max-width: 1180px) {
+    .lock-stage-layout {
+        grid-template-columns: 1fr;
+    }
+
     .lock-specs {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -751,6 +804,10 @@ body {
 }
 
 @media (max-width: 860px) {
+    .lock-copy-grid {
+        grid-template-columns: 1fr;
+    }
+
     .lock-page {
         padding: 14px;
     }
