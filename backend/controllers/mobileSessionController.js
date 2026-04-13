@@ -63,11 +63,11 @@ async function handleMobileSessionStatus(requestUrl, response, ensureDatabase) {
     const status = await getMobileSessionStatus(payload);
     sendJson(response, 200, {
       success: true,
-      active: status.active !== false,
-      reason: status.logout_reason || null,
+      active: status.activo !== false,
+      reason: status.motivo_cierre_sesion || null,
       registro: status.registro || null,
-      updatedAt: status.updated_at || null,
-      userId: status.user_id || null,
+      updatedAt: status.actualizado_en || null,
+      userId: status.usuario_id || null,
     });
   } catch (error) {
     sendJson(response, 500, {

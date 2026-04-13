@@ -6,8 +6,8 @@
     <title>Smart Lock Access - FICCT</title>
     <link rel="icon" type="image/png" href="assets/Escudo_FICCT.png">
     <script>if(localStorage.getItem("daynight-theme")==="carbon"){document.documentElement.classList.add("carbon");}</script>
-    <link rel="stylesheet" href="templatemo-daynight-style.css?v=20260330-10">
-    <link rel="stylesheet" href="smart-lock.css?v=20260330-10">
+    <link rel="stylesheet" href="templatemo-daynight-style.css?v=20260413-11">
+    <link rel="stylesheet" href="smart-lock.css?v=20260413-11">
 </head>
 <body>
     <div class="lock-page">
@@ -106,6 +106,11 @@
                                 <strong>Reconocimiento facial</strong>
                                 <p>El backend procesa el rostro capturado y confirma la identidad para abrir el acceso.</p>
                             </article>
+                            <article id="smartLockStateCard" class="smart-lock-state-card">
+                                <strong id="smartLockStateTitle">Chapa inteligente: apagada</strong>
+                                <p id="smartLockStateText">Sin funcionalidad inteligente. Esperando una orden desde el módulo de instalaciones.</p>
+                                <small id="smartLockStateMeta">Módulo: Modulo Docente · Operador: sin datos · Método: sin datos</small>
+                            </article>
                         </div>
                     </div>
                 </div>
@@ -115,7 +120,7 @@
     </div>
 
     <canvas id="captureCanvas" class="capture-canvas"></canvas>
-    <script src="templatemo-daynight-script.js?v=20260330-10"></script>
-    <script type="module" src="login.js?v=20260330-10"></script>
+    <script src="templatemo-daynight-script.js?v=20260413-12"></script>
+    <script type="module" src="login.js?v=20260413-12"></script>
 </body>
 </html>

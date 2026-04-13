@@ -24,7 +24,7 @@ async function handlePasswordLogin(request, response, ensureDatabase) {
 
     const user = await findUserForLogin(registro);
 
-    if (!user || !user.password_hash || !verifyPassword(password, user.password_hash)) {
+    if (!user || !user.hash_contrasena || !verifyPassword(password, user.hash_contrasena)) {
       await createAccessLog({
         identifier: registro,
         reason: "Credenciales inválidas.",

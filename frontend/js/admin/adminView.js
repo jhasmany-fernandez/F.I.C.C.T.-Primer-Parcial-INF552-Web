@@ -58,7 +58,7 @@ export class AdminView {
     }
 
     setHealthState(health) {
-        const dbAvailable = Boolean(health?.database?.available);
+        const dbAvailable = Boolean(health?.database?.connected);
         document.getElementById("adminStatusText").textContent = dbAvailable
             ? "Servicios administrativos disponibles"
             : "Panel activo con revisión pendiente de PostgreSQL";
@@ -150,5 +150,26 @@ export class AdminView {
 
     confirmSaveImportedUsers() {
         return window.confirm("El Excel se cargó correctamente. ¿Quieres guardar estos registros en la base de datos ahora?");
+    }
+
+    renderAccessDenied(message) {
+        const mainContent = document.querySelector(".main-content");
+        if (!mainContent) {
+            return;
+        }
+
+        mainContent.innerHTML = `
+            <section class="dashboard-hero admin-hero">
+                <div class="dashboard-hero-copy">
+                    <span class="hero-chip">Acceso restringido</span>
+                    <h1 class="dashboard-hero-title">No tienes permiso para entrar a este módulo.</h1>
+                    <p class="dashboard-hero-text">${message}</p>
+                    <div class="dashboard-hero-actions">
+                        <a href="index.html" class="btn btn-primary">Volver al dashboard</a>
+                        <a href="login.html" class="btn btn-secondary">Ir al acceso</a>
+                    </div>
+                </div>
+            </section>
+        `;
     }
 }

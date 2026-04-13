@@ -6,8 +6,51 @@ export class AdminController {
     }
 
     async initialize() {
+        const allowed = await this.ensureAdministrativeAccess();
+        if (!allowed) {
+            return;
+        }
+
         this.view.bind(this);
         await this.reloadData();
+    }
+
+    async ensureAdministrativeAccess() {
+        try {
+            const { response, result } = await this.model.getSmartLocksState();
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || "No se pudo consultar el estado de la chapa inteligente.");
+            }
+
+            if (result.smartLocksPowerEnabled) {
+                return true;
+            }
+
+            const currentUser = window.getSmartAccessCurrentUser?.();
+            const registro = currentUser?.registro || "";
+            if (!registro) {
+                this.view.renderAccessDenied("La chapa inteligente está apagada y tu sesión no identifica un usuario administrador.");
+                return false;
+            }
+
+            const profileResponse = await this.model.getUserProfile(registro);
+            const { response: userResponse, result: userResult } = profileResponse;
+            if (!userResponse.ok || !userResult.success) {
+                throw new Error(userResult.error || "No se pudo validar el perfil actual.");
+            }
+
+            window.setSmartAccessCurrentUser?.(userResult.user);
+
+            if (userResult.user?.rol !== "Administrador") {
+                this.view.renderAccessDenied("Con la chapa inteligente apagada, este módulo solo está disponible para usuarios con rol Administrador.");
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            this.view.renderAccessDenied(error.message || "No se pudo validar el acceso al módulo administrativo.");
+            return false;
+        }
     }
 
     async reloadData() {

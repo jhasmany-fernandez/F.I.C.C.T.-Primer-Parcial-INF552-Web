@@ -12,6 +12,11 @@ const {
 const { handleFaceLogin, handlePasswordLogin } = require("./controllers/authController");
 const { handleHealth } = require("./controllers/healthController");
 const {
+  handleDisableSmartLocks,
+  handleEnableSmartLocks,
+  handleGetSmartLocksState,
+} = require("./controllers/installationsController");
+const {
   handleActivateMobileSession,
   handleInvalidateMobileSession,
   handleMobileSessionStatus,
@@ -21,6 +26,7 @@ const { handleAppLogoutConfig, handleLogoutSession } = require("./controllers/se
 const {
   handleBulkSaveUsers,
   handleCreateUser,
+  handleGetUserProfile,
   handleImportUsersExcel,
   handleListUsers,
   handleUpdateUserPassword,
@@ -129,6 +135,21 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "POST" && requestUrl.pathname === "/api/installations/enable-smart-locks") {
+    await handleEnableSmartLocks(request, response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/installations/disable-smart-locks") {
+    await handleDisableSmartLocks(request, response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/installations/smart-locks/status") {
+    await handleGetSmartLocksState(response, ensureDatabase);
+    return;
+  }
+
   if (request.method === "POST" && requestUrl.pathname === "/api/users") {
     await handleCreateUser(request, response, ensureDatabase);
     return;
@@ -141,6 +162,11 @@ const server = http.createServer(async (request, response) => {
 
   if (request.method === "GET" && requestUrl.pathname === "/api/users") {
     await handleListUsers(response, ensureDatabase);
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/users/profile") {
+    await handleGetUserProfile(requestUrl, response, ensureDatabase);
     return;
   }
 

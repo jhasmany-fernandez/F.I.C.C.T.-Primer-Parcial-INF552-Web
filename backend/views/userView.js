@@ -12,8 +12,8 @@ function serializeUser(user) {
     correo: user.correo,
     rol: user.rol,
     estado: user.estado,
-    faceExternalId: user.face_external_id,
-    createdAt: user.created_at,
+    faceExternalId: user.id_rostro_externo,
+    createdAt: user.creado_en,
   };
 }
 

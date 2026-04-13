@@ -220,6 +220,25 @@ function closeMobileMenu() {
     }
 }
 
+// ===== Shared API URL Resolver =====
+function resolveApiBaseUrl() {
+    const { hostname, origin, port, protocol } = window.location;
+    const normalizedPort = port || (protocol === 'https:' ? '443' : '80');
+
+    if ((normalizedPort === '80' || normalizedPort === '443') && hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+        return `${protocol}//${hostname}:8081`;
+    }
+
+    return origin;
+}
+
+function buildApiUrl(path) {
+    return `${resolveApiBaseUrl()}${path}`;
+}
+
+window.resolveSmartAccessApiBaseUrl = resolveApiBaseUrl;
+window.buildSmartAccessApiUrl = buildApiUrl;
+
 // ===== Logout to App =====
 function setWebSessionState(isAuthenticated, extra = {}) {
     const payload = {
@@ -233,6 +252,22 @@ function setWebSessionState(isAuthenticated, extra = {}) {
     }
 
     localStorage.setItem('smartaccess-session', JSON.stringify(payload));
+
+    if (payload.userId) {
+        localStorage.setItem('smartaccess-user-id', String(payload.userId));
+    }
+
+    if (payload.registro) {
+        localStorage.setItem('smartaccess-registro', String(payload.registro));
+    }
+
+    if (payload.role) {
+        localStorage.setItem('smartaccess-user-role', String(payload.role));
+    }
+
+    if (payload.userName) {
+        localStorage.setItem('smartaccess-user-name', String(payload.userName));
+    }
 }
 
 function getWebSessionState() {
@@ -267,6 +302,40 @@ function isWebSessionActive() {
     return Boolean(session?.authenticated);
 }
 
+function getSmartAccessCurrentUser() {
+    const session = getWebSessionState() || {};
+    const userId = session.userId || localStorage.getItem('smartaccess-user-id') || null;
+    const registro = session.registro || localStorage.getItem('smartaccess-registro') || null;
+    const role = session.role || localStorage.getItem('smartaccess-user-role') || null;
+    const userName = session.userName || localStorage.getItem('smartaccess-user-name') || null;
+
+    if (!userId && !registro && !role && !userName) {
+        return null;
+    }
+
+    return {
+        userId,
+        registro,
+        role,
+        userName
+    };
+}
+
+function setSmartAccessCurrentUser(user = {}) {
+    const registro = user.registro || null;
+    const role = user.rol || user.role || null;
+    const userId = user.id || user.userId || null;
+    const fullName = [user.nombre, user.apellido].filter(Boolean).join(' ').trim();
+    const userName = user.userName || fullName || null;
+
+    setWebSessionState(true, {
+        userId,
+        registro,
+        role,
+        userName
+    });
+}
+
 function redirectToLoginIfLoggedOut() {
     if (window.location.pathname.endsWith('login.html') || window.location.pathname === '/' || isWebSessionActive()) {
         return;
@@ -286,6 +355,8 @@ window.markLogoutInProgress = markLogoutInProgress;
 window.hasRecentLogoutCooldown = hasRecentLogoutCooldown;
 window.isWebSessionActive = isWebSessionActive;
 window.redirectToLoginIfLoggedOut = redirectToLoginIfLoggedOut;
+window.getSmartAccessCurrentUser = getSmartAccessCurrentUser;
+window.setSmartAccessCurrentUser = setSmartAccessCurrentUser;
 
 async function handleLogoutToApp(event, options = {}) {
     if (event) {
@@ -315,7 +386,7 @@ async function handleLogoutToApp(event, options = {}) {
             query.set('registro', registro);
         }
 
-        const response = await fetch(`/api/session/logout-app?${query.toString()}`, {
+        const response = await fetch(buildApiUrl(`/api/session/logout-app?${query.toString()}`), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -328,14 +399,14 @@ async function handleLogoutToApp(event, options = {}) {
 
         const result = await response.json();
 
-        await fetch('/api/session/logout', {
+        await fetch(buildApiUrl('/api/session/logout'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
         }).catch(() => null);
 
-        await fetch('/api/mobile-session/logout', {
+        await fetch(buildApiUrl('/api/mobile-session/logout'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -352,6 +423,8 @@ async function handleLogoutToApp(event, options = {}) {
         markLogoutInProgress();
         localStorage.removeItem('smartaccess-user-id');
         localStorage.removeItem('smartaccess-registro');
+        localStorage.removeItem('smartaccess-user-role');
+        localStorage.removeItem('smartaccess-user-name');
 
         openAppLogoutWithFallback(result, fallbackUrl);
     } catch (error) {

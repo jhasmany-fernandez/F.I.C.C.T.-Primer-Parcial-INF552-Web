@@ -12,10 +12,24 @@ const SYSTEM_ADMIN = {
 };
 
 async function ensureSystemAdministrator(hashPassword) {
+  const existingAdministrator = await query(
+    `
+      SELECT id
+      FROM usuarios
+      WHERE rol = 'Administrador'
+      ORDER BY id ASC
+      LIMIT 1
+    `
+  );
+
+  if (existingAdministrator.rows[0]) {
+    return existingAdministrator.rows[0];
+  }
+
   const existing = await query(
     `
       SELECT id
-      FROM users
+      FROM usuarios
       WHERE registro = $1
       LIMIT 1
     `,
@@ -29,16 +43,16 @@ async function ensureSystemAdministrator(hashPassword) {
   const passwordHash = hashPassword("123ppp---");
   const inserted = await query(
     `
-      INSERT INTO users (
+      INSERT INTO usuarios (
         ci,
         registro,
         nombre,
         apellido,
         correo,
-        password_hash,
+        hash_contrasena,
         rol,
         estado,
-        face_external_id
+        id_rostro_externo
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
@@ -74,12 +88,41 @@ async function findUserForLogin(registro) {
         nombre,
         apellido,
         correo,
-        password_hash,
+        hash_contrasena,
         rol,
         estado,
-        face_external_id,
-        created_at
-      FROM users
+        id_rostro_externo,
+        creado_en
+      FROM usuarios
+      WHERE registro = $1
+      LIMIT 1
+    `,
+    [normalizedRegistro]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function findUserByRegistro(registro) {
+  const normalizedRegistro = cleanValue(registro);
+  if (!normalizedRegistro) {
+    return null;
+  }
+
+  const result = await query(
+    `
+      SELECT
+        id,
+        ci,
+        registro,
+        nombre,
+        apellido,
+        correo,
+        rol,
+        estado,
+        id_rostro_externo,
+        creado_en
+      FROM usuarios
       WHERE registro = $1
       LIMIT 1
     `,
@@ -100,9 +143,9 @@ async function findExistingUsersByRegistro(registros) {
       SELECT
         id,
         registro,
-        password_hash,
+        hash_contrasena,
         estado
-      FROM users
+      FROM usuarios
       WHERE registro = ANY($1::text[])
     `,
     [uniqueRegistros]
@@ -137,12 +180,12 @@ async function upsertImportedUser(importedUser, buildImportedUserPayload, hashPa
         nombre,
         apellido,
         correo,
-        password_hash,
+        hash_contrasena,
         rol,
         estado,
-        face_external_id,
-        created_at
-      FROM users
+        id_rostro_externo,
+        creado_en
+      FROM usuarios
       WHERE registro = $1
       LIMIT 1
     `,
@@ -153,16 +196,16 @@ async function upsertImportedUser(importedUser, buildImportedUserPayload, hashPa
   if (existing) {
     const updated = await db.query(
       `
-        UPDATE users
+        UPDATE usuarios
         SET
           nombre = $1,
           apellido = $2,
           correo = $3,
           rol = $4,
-          face_external_id = $5,
-          updated_at = NOW()
+          id_rostro_externo = $5,
+          actualizado_en = NOW()
         WHERE id = $6
-        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, face_external_id, created_at
+        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
       `,
       [
         user.nombre,
@@ -184,19 +227,19 @@ async function upsertImportedUser(importedUser, buildImportedUserPayload, hashPa
   const passwordHash = hashPassword(user.password);
   const inserted = await db.query(
     `
-      INSERT INTO users (
+      INSERT INTO usuarios (
         ci,
         registro,
         nombre,
         apellido,
         correo,
-        password_hash,
+        hash_contrasena,
         rol,
         estado,
-        face_external_id
+        id_rostro_externo
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, face_external_id, created_at
+      RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
     `,
     [
       user.ci,
@@ -222,6 +265,7 @@ module.exports = {
   SYSTEM_ADMIN,
   ensureSystemAdministrator,
   findExistingUsersByRegistro,
+  findUserByRegistro,
   findUserForLogin,
   upsertImportedUser,
 };

@@ -12,8 +12,10 @@ const {
 const {
   SYSTEM_ADMIN,
   findExistingUsersByRegistro,
+  findUserByRegistro,
   upsertImportedUser,
 } = require("../models/userModel");
+const { getSmartLocksState } = require("../models/installationsModel");
 const { sendJson } = require("../views/jsonView");
 const { serializeUser } = require("../views/userView");
 const { readJsonBody } = require("../utils/httpUtils");
@@ -25,6 +27,35 @@ const {
   validateUserPayload,
 } = require("../services/userService");
 const { cleanValue } = require("../utils/valueUtils");
+
+async function authorizeAdministrativeAccess(request, response, ensureDatabase) {
+  await ensureDatabase();
+  const smartLocksState = await getSmartLocksState();
+
+  if (smartLocksState.smartLocksPowerEnabled) {
+    return true;
+  }
+
+  const actorRegistration = cleanValue(request.headers["x-user-registration"]);
+  if (!actorRegistration) {
+    sendJson(response, 403, {
+      success: false,
+      error: "Debes identificar al usuario autenticado para acceder a este módulo mientras la chapa esté apagada.",
+    });
+    return false;
+  }
+
+  const actor = await findUserByRegistro(actorRegistration);
+  if (!actor || actor.rol !== "Administrador") {
+    sendJson(response, 403, {
+      success: false,
+      error: "Con la chapa apagada, solo un Administrador puede acceder a carga masiva.",
+    });
+    return false;
+  }
+
+  return true;
+}
 
 async function handleCreateUser(request, response, ensureDatabase) {
   try {
@@ -44,19 +75,19 @@ async function handleCreateUser(request, response, ensureDatabase) {
     const passwordHash = hashPassword(user.password);
     const result = await query(
       `
-        INSERT INTO users (
+        INSERT INTO usuarios (
           ci,
           registro,
           nombre,
           apellido,
           correo,
-          password_hash,
+          hash_contrasena,
           rol,
           estado,
-          face_external_id
+          id_rostro_externo
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, face_external_id, created_at
+        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
       `,
       [
         user.ci,
@@ -95,6 +126,11 @@ async function handleCreateUser(request, response, ensureDatabase) {
 
 async function handleImportUsersExcel(request, response, ensureDatabase) {
   try {
+    const allowed = await authorizeAdministrativeAccess(request, response, ensureDatabase);
+    if (!allowed) {
+      return;
+    }
+
     const payload = await readJsonBody(request);
     const fileName = cleanValue(payload.fileName);
     const fileContentBase64 = cleanValue(payload.fileContentBase64);
@@ -173,7 +209,7 @@ async function handleImportUsersExcel(request, response, ensureDatabase) {
 
       users = users.map((user) => {
         const existingUser = existingUsers.get(user.registro);
-        const hasPasswordAssigned = Boolean(existingUser?.password_hash);
+        const hasPasswordAssigned = Boolean(existingUser?.hash_contrasena);
 
         return {
           ...user,
@@ -211,9 +247,9 @@ async function handleListUsers(response, ensureDatabase) {
     await ensureDatabase();
     const result = await query(
       `
-        SELECT id, ci, registro, nombre, apellido, correo, rol, estado, face_external_id, created_at
-        FROM users
-        ORDER BY created_at DESC
+        SELECT id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
+        FROM usuarios
+        ORDER BY creado_en DESC
         LIMIT 50
       `
     );
@@ -231,9 +267,48 @@ async function handleListUsers(response, ensureDatabase) {
   }
 }
 
-async function handleBulkSaveUsers(request, response, ensureDatabase) {
+async function handleGetUserProfile(requestUrl, response, ensureDatabase) {
   try {
     await ensureDatabase();
+    const registro = cleanValue(requestUrl.searchParams.get("registro"));
+
+    if (!registro) {
+      sendJson(response, 400, {
+        success: false,
+        error: "Debes enviar el número de registro a consultar.",
+      });
+      return;
+    }
+
+    const user = await findUserByRegistro(registro);
+    if (!user) {
+      sendJson(response, 404, {
+        success: false,
+        error: "No se encontró un usuario con ese número de registro.",
+      });
+      return;
+    }
+
+    sendJson(response, 200, {
+      success: true,
+      user: serializeUser(user),
+    });
+  } catch (error) {
+    sendJson(response, 500, {
+      success: false,
+      error: "No se pudo consultar el perfil del usuario.",
+      message: error.message,
+    });
+  }
+}
+
+async function handleBulkSaveUsers(request, response, ensureDatabase) {
+  try {
+    const allowed = await authorizeAdministrativeAccess(request, response, ensureDatabase);
+    if (!allowed) {
+      return;
+    }
+
     const payload = await readJsonBody(request);
     const users = Array.isArray(payload.users) ? payload.users : [];
 
@@ -342,13 +417,13 @@ async function handleUpdateUserPassword(request, response, ensureDatabase) {
     const passwordHash = hashPassword(update.password);
     const result = await query(
       `
-        UPDATE users
+        UPDATE usuarios
         SET
-          password_hash = $1,
+          hash_contrasena = $1,
           estado = 'Activo',
-          updated_at = NOW()
+          actualizado_en = NOW()
         WHERE registro = $2
-        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, face_external_id, created_at
+        RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
       `,
       [passwordHash, update.registro]
     );
@@ -378,6 +453,7 @@ async function handleUpdateUserPassword(request, response, ensureDatabase) {
 module.exports = {
   handleBulkSaveUsers,
   handleCreateUser,
+  handleGetUserProfile,
   handleImportUsersExcel,
   handleListUsers,
   handleUpdateUserPassword,

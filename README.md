@@ -153,6 +153,81 @@ La app móvil administrativa consume el backend usando la IP local de la computa
 - El reconocimiento facial real vive en `face-recognition-service/`.
 - La web puede usarse como interfaz administrativa, mientras que la app móvil concentra vistas operativas y administración móvil.
 
+## API de Reportes
+
+El backend recibe reportes desde móvil o web en:
+
+```http
+POST /api/reports
+Content-Type: application/json
+```
+
+### Contrato JSON esperado
+
+```json
+{
+  "reporterRegistro": "219012345",
+  "reporterNombre": "Juan Perez",
+  "problemType": "Equipo de computación",
+  "problemState": "No funciona",
+  "priority": "Alta",
+  "description": "La computadora del aula no enciende desde el inicio de clases.",
+  "evidenceImageBase64": "/9j/4AAQSkZJRgABAQAAAQABAAD..."
+}
+```
+
+### Campos
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---:|---|
+| reporterRegistro | String | Sí | Registro del usuario que reporta |
+| reporterNombre | String | Sí | Nombre del usuario que reporta |
+| problemType | String | Sí | Tipo de problema seleccionado |
+| problemState | String | Sí | Estado del problema. Ej: `No funciona`, `Funciona mal`, `Detalle estético` |
+| priority | String | Sí | Prioridad calculada. Ej: `Alta`, `Media`, `Baja` |
+| description | String | Sí | Descripción breve del incidente |
+| evidenceImageBase64 | String o null | No | Evidencia fotográfica codificada en Base64 |
+
+### DTO de referencia para Flutter
+
+```kotlin
+data class ReportRequest(
+    val reporterRegistro: String,
+    val reporterNombre: String,
+    val problemType: String,
+    val problemState: String,
+    val priority: String,
+    val description: String,
+    val evidenceImageBase64: String?
+)
+```
+
+### Respuesta exitosa
+
+```json
+{
+  "success": true,
+  "message": "Reporte registrado correctamente.",
+  "report": {
+    "id": 1,
+    "reporterRegistro": "219012345",
+    "reporterNombre": "Juan Perez",
+    "problemType": "Equipo de computación",
+    "problemState": "No funciona",
+    "priority": "Alta",
+    "description": "La computadora del aula no enciende desde el inicio de clases.",
+    "evidenceImageBase64": "/9j/4AAQSkZJRgABAQAAAQABAAD...",
+    "createdAt": "2026-04-13T00:00:00.000Z"
+  }
+}
+```
+
+### Notas para Flutter
+
+- `evidenceImageBase64` puede enviarse como `null` si no hay evidencia.
+- El backend limita el cuerpo JSON a aproximadamente `10 MB`, así que conviene comprimir o redimensionar imágenes grandes antes de codificarlas.
+- Si falta un campo obligatorio, el backend responde con `400 Bad Request`.
+
 ## Git
 
 Antes de subir cambios, verifica que no se incluyan archivos sensibles:

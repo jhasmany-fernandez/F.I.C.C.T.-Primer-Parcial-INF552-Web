@@ -2,6 +2,13 @@ export class LoginModel {
     constructor() {
         this.currentStream = null;
         this.keypadBuffer = "";
+        this.apiBaseUrl = typeof window.resolveSmartAccessApiBaseUrl === "function"
+            ? window.resolveSmartAccessApiBaseUrl()
+            : window.location.origin;
+    }
+
+    buildApiUrl(path) {
+        return `${this.apiBaseUrl}${path}`;
     }
 
     getStream() {
@@ -14,10 +21,6 @@ export class LoginModel {
 
     clearStream() {
         this.currentStream = null;
-    }
-
-    getIdentifier() {
-        return document.getElementById("identifierInput")?.value.trim() || "";
     }
 
     appendKeypadDigit(digit) {
@@ -39,7 +42,7 @@ export class LoginModel {
     }
 
     async sendFaceLogin(payload) {
-        const response = await fetch("/login-face", {
+        const response = await fetch(this.buildApiUrl("/login-face"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -55,7 +58,7 @@ export class LoginModel {
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 12000);
 
-        const response = await fetch("/api/access-code/validate", {
+        const response = await fetch(this.buildApiUrl("/api/access-code/validate"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -70,7 +73,20 @@ export class LoginModel {
     }
 
     async getBiometricAccessStatus() {
-        const response = await fetch(`/api/biometric-access/status?_t=${Date.now()}`, {
+        const response = await fetch(this.buildApiUrl(`/api/biometric-access/status?_t=${Date.now()}`), {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        const result = await response.json();
+        return { response, result };
+    }
+
+    async getSmartLocksState() {
+        const response = await fetch(this.buildApiUrl(`/api/installations/smart-locks/status?_t=${Date.now()}`), {
             method: "GET",
             cache: "no-store",
             headers: {

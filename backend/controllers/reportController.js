@@ -18,6 +18,10 @@ function validateReportPayload(payload) {
     return { error: "No se recibió el número de registro del usuario logueado." };
   }
 
+  if (!report.reporterNombre) {
+    return { error: "No se recibió el nombre del usuario que reporta." };
+  }
+
   if (!report.problemType) {
     return { error: "Debes seleccionar el tipo de problema." };
   }

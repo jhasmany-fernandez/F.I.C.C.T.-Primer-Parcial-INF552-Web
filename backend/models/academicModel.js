@@ -3,7 +3,7 @@ async function upsertMateria(client, materia) {
     `
       SELECT id
       FROM materias
-      WHERE sigla = $1 AND grupo = $2 AND docente_id = $3
+      WHERE sigla = $1 AND grupo = $2 AND id_docente = $3
       LIMIT 1
     `,
     [materia.sigla, materia.grupo, materia.docenteId]
@@ -15,9 +15,9 @@ async function upsertMateria(client, materia) {
         UPDATE materias
         SET
           nombre_materia = $1,
-          updated_at = NOW()
+          actualizado_en = NOW()
         WHERE id = $2
-        RETURNING id, sigla, grupo, nombre_materia, docente_id, created_at, updated_at
+        RETURNING id, sigla, grupo, nombre_materia, id_docente, creado_en, actualizado_en
       `,
       [materia.nombreMateria, existing.rows[0].id]
     );
@@ -31,10 +31,10 @@ async function upsertMateria(client, materia) {
         sigla,
         grupo,
         nombre_materia,
-        docente_id
+        id_docente
       )
       VALUES ($1, $2, $3, $4)
-      RETURNING id, sigla, grupo, nombre_materia, docente_id, created_at, updated_at
+      RETURNING id, sigla, grupo, nombre_materia, id_docente, creado_en, actualizado_en
     `,
     [materia.sigla, materia.grupo, materia.nombreMateria, materia.docenteId]
   );
@@ -47,7 +47,7 @@ async function upsertHorario(client, horario) {
     `
       SELECT id
       FROM horarios
-      WHERE materia_id = $1
+      WHERE id_materia = $1
       LIMIT 1
     `,
     [horario.materiaId]
@@ -74,9 +74,9 @@ async function upsertHorario(client, horario) {
           jueves = $4,
           viernes = $5,
           sabado = $6,
-          updated_at = NOW()
-        WHERE materia_id = $7
-        RETURNING id, materia_id, lunes, martes, miercoles, jueves, viernes, sabado, created_at, updated_at
+          actualizado_en = NOW()
+        WHERE id_materia = $7
+        RETURNING id, id_materia, lunes, martes, miercoles, jueves, viernes, sabado, creado_en, actualizado_en
       `,
       values
     );
@@ -93,10 +93,10 @@ async function upsertHorario(client, horario) {
         jueves,
         viernes,
         sabado,
-        materia_id
+        id_materia
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id, materia_id, lunes, martes, miercoles, jueves, viernes, sabado, created_at, updated_at
+      RETURNING id, id_materia, lunes, martes, miercoles, jueves, viernes, sabado, creado_en, actualizado_en
     `,
     values
   );

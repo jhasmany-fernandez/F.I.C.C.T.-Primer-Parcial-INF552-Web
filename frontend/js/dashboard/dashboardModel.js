@@ -1,9 +1,15 @@
 export class DashboardModel {
+    buildApiUrl(path) {
+        return typeof window.buildSmartAccessApiUrl === "function"
+            ? window.buildSmartAccessApiUrl(path)
+            : `${window.location.origin}${path}`;
+    }
+
     async loadData() {
         const [healthResponse, usersResponse, logsResponse] = await Promise.all([
-            fetch("/health"),
-            fetch("/api/users"),
-            fetch("/api/access-logs")
+            fetch(this.buildApiUrl("/health")),
+            fetch(this.buildApiUrl("/api/users")),
+            fetch(this.buildApiUrl("/api/access-logs"))
         ]);
 
         const health = await healthResponse.json();

@@ -17,8 +17,16 @@ export class LoginController {
             "Aún no llega autorización desde la app."
         );
         this.view.setFeedback("info", "Sistema listo", "Esperando autorización por huella/facial o ingreso de PIN.");
+        this.view.updateSmartLockState?.({
+            smartLocksPowerEnabled: false,
+            intelligentModeEnabled: false,
+            moduleName: "Modulo Docente",
+            operatorName: "sin datos",
+            authMethod: null,
+        });
         this.view.bind(this);
         this.startBiometricStatusPolling();
+        this.startSmartLocksStatusPolling();
     }
 
     startBiometricStatusPolling() {
@@ -84,6 +92,31 @@ export class LoginController {
         // Verificación inmediata para evitar esperar 3s tras abrir la página.
         checkBiometricStatus();
         window.setInterval(checkBiometricStatus, 3000);
+    }
+
+    startSmartLocksStatusPolling() {
+        const checkSmartLocksStatus = async () => {
+            try {
+                const { response, result } = await this.model.getSmartLocksState();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || "No se pudo consultar el estado de instalaciones.");
+                }
+
+                this.view.updateSmartLockState?.(result);
+            } catch (error) {
+                this.view.updateSmartLockState?.({
+                    smartLocksPowerEnabled: false,
+                    intelligentModeEnabled: false,
+                    moduleName: "sin conexión",
+                    operatorName: "sin conexión",
+                    authMethod: null,
+                });
+            }
+        };
+
+        checkSmartLocksStatus();
+        window.setInterval(checkSmartLocksStatus, 3000);
     }
 
     async startCamera() {
@@ -155,7 +188,7 @@ export class LoginController {
 
         try {
             const { response, result } = await this.model.sendFaceLogin({
-                identifier: this.model.getIdentifier(),
+                identifier: this.view.getIdentifier(),
                 image,
                 threshold: 0.6
             });
@@ -174,9 +207,16 @@ export class LoginController {
                 `${result.message || "Reconocimiento facial exitoso."}${similarityText}`
             );
             this.view.updateKeypadResult("success", "Rostro validado");
+            if (result.user) {
+                window.setSmartAccessCurrentUser?.(result.user);
+            }
             window.setWebSessionState?.(true, {
                 method: "face",
                 reason: "face_login",
+                registro: result.user?.registro || null,
+                role: result.user?.rol || null,
+                userId: result.user?.id || null,
+                userName: result.user ? `${result.user.nombre} ${result.user.apellido}`.trim() : null,
             });
             await this.view.playUnlockAnimation();
             this.view.redirectToDashboard();

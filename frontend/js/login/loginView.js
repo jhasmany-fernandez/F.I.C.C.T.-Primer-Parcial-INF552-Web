@@ -23,6 +23,10 @@ export class LoginView {
         this.biometricIndicatorTitle = document.getElementById("biometricIndicatorTitle");
         this.biometricIndicatorText = document.getElementById("biometricIndicatorText");
         this.ringFinger = document.querySelector(".ring-item.ring-finger");
+        this.smartLockStateCard = document.getElementById("smartLockStateCard");
+        this.smartLockStateTitle = document.getElementById("smartLockStateTitle");
+        this.smartLockStateText = document.getElementById("smartLockStateText");
+        this.smartLockStateMeta = document.getElementById("smartLockStateMeta");
     }
 
     bind(controller) {
@@ -106,6 +110,10 @@ export class LoginView {
         return this.captureCanvas.toDataURL("image/jpeg", 0.92);
     }
 
+    getIdentifier() {
+        return document.getElementById("identifierInput")?.value.trim() || "";
+    }
+
     updateKeypadDisplay(value) {
         if (!this.keypadDisplay) {
             return;
@@ -145,6 +153,32 @@ export class LoginView {
         if (this.ringFinger) {
             this.ringFinger.classList.toggle("is-active", state === "is-active");
         }
+    }
+
+    updateSmartLockState(payload = {}) {
+        if (!this.smartLockStateCard || !this.smartLockStateTitle || !this.smartLockStateText || !this.smartLockStateMeta) {
+            return;
+        }
+
+        const powerEnabled = Boolean(payload.smartLocksPowerEnabled);
+        const intelligentEnabled = Boolean(payload.intelligentModeEnabled);
+        const moduleName = payload.moduleName || "Modulo Docente";
+        const operatorName = payload.operatorName || "sin datos";
+        const authMethod = payload.authMethod === "face"
+            ? "rostro"
+            : (payload.authMethod === "fingerprint" ? "huella" : "sin datos");
+
+        this.smartLockStateCard.classList.remove("is-on", "is-off");
+        this.smartLockStateCard.classList.add(powerEnabled ? "is-on" : "is-off");
+        this.lockBody?.classList.toggle("is-installation-on", powerEnabled);
+
+        this.smartLockStateTitle.textContent = powerEnabled
+            ? "Chapa inteligente: encendida"
+            : "Chapa inteligente: apagada";
+        this.smartLockStateText.textContent = intelligentEnabled
+            ? "Funcionalidad inteligente habilitada. La chapa puede operar con biometría y control remoto."
+            : "Sin funcionalidad inteligente. Esperando una orden desde el módulo de instalaciones.";
+        this.smartLockStateMeta.textContent = `Módulo: ${moduleName} · Operador: ${operatorName} · Método: ${authMethod}`;
     }
 
     async playUnlockAnimation() {

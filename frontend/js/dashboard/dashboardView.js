@@ -9,7 +9,7 @@ function formatDate(value) {
 
 export class DashboardView {
     setHealthState(health) {
-        const dbAvailable = Boolean(health?.database?.available);
+        const dbAvailable = Boolean(health?.database?.connected);
         document.getElementById("heroStatusText").textContent = dbAvailable
             ? "Servicios base activos y listos para operar"
             : "Backend activo con revisión pendiente de PostgreSQL";

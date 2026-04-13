@@ -3,8 +3,9 @@ const { sendJson } = require("../views/jsonView");
 
 async function handleHealth(response, faceServiceUrl) {
   const database = await getDatabaseStatus();
+  const statusCode = database.connected ? 200 : 503;
 
-  sendJson(response, 200, {
+  sendJson(response, statusCode, {
     status: "ok",
     service: "backend-node",
     faceServiceUrl,
