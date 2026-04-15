@@ -98,6 +98,7 @@ function mapExcelUserRows(rows, sheetName) {
     correo: ["correo", "correo institucional", "correo electronico", "email"],
     nombre: ["nombre", "nombres"],
     registro: ["numero de registro", "nro de registro", "registro", "numero registro"],
+    rol: ["rol", "perfil", "cargo"],
   };
   const inferredRole = inferRoleFromSheetName(sheetName);
 
@@ -128,7 +129,7 @@ function mapExcelUserRows(rows, sheetName) {
       return {
         ...mapped,
         docente: mapped.docente || [mapped.apellido, mapped.nombre].filter(Boolean).join(" "),
-        rol: inferredRole,
+        rol: mapped.rol || inferredRole,
       };
     })
     .filter((row) => row.nombre || row.apellido || row.registro || row.correo || row.sigla || row.materia);

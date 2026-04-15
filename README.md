@@ -119,6 +119,18 @@ Se usan como capa auxiliar para lógica reutilizable:
 
 ## Ejecución Básica
 
+### Variables de entorno
+
+1. Copia `.env.example` a `.env`.
+2. Define `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB`.
+3. Mantén esos mismos valores para todos los servicios Docker del proyecto.
+
+### Nota importante sobre PostgreSQL y volúmenes persistentes
+
+Si reutilizas el volumen `postgres_data`, cambiar `POSTGRES_PASSWORD` en `docker-compose.yml` o `.env` no actualiza por sí solo la contraseña interna del rol en PostgreSQL.
+
+Para evitar que backend y base de datos vuelvan a desincronizarse, este proyecto ahora fuerza en cada arranque del contenedor `db` que la contraseña real del usuario configurado coincida con `POSTGRES_PASSWORD`.
+
 ### Backend web
 
 ```bash
