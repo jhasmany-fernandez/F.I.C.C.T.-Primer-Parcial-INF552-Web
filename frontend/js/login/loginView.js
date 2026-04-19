@@ -1,3 +1,5 @@
+// MVC View: encapsula el DOM del login. Solo pinta, lee inputs y expone
+// eventos de interfaz; las decisiones quedan en el controller.
 export class LoginView {
     constructor() {
         this.cameraPreview = document.getElementById("cameraPreview");
@@ -7,6 +9,7 @@ export class LoginView {
         this.faceLoginBtn = document.getElementById("faceLoginBtn");
         this.captureOnlyBtn = document.getElementById("captureOnlyBtn");
         this.passwordLoginForm = document.getElementById("passwordLoginForm");
+        this.passwordInput = document.getElementById("passwordInput");
         this.feedbackBox = document.getElementById("loginFeedback");
         this.feedbackTitle = document.getElementById("feedbackTitle");
         this.feedbackMessage = document.getElementById("feedbackMessage");
@@ -29,6 +32,7 @@ export class LoginView {
         this.smartLockStateMeta = document.getElementById("smartLockStateMeta");
     }
 
+    // La view solo enlaza eventos de UI; el significado de cada acción lo decide el controller.
     bind(controller) {
         this.startCameraBtn?.addEventListener("click", () => controller.toggleCamera());
         this.faceLoginBtn?.addEventListener("click", () => controller.loginWithFace());
@@ -112,6 +116,21 @@ export class LoginView {
 
     getIdentifier() {
         return document.getElementById("identifierInput")?.value.trim() || "";
+    }
+
+    getPassword() {
+        return this.passwordInput?.value || "";
+    }
+
+    clearPassword() {
+        if (this.passwordInput) {
+            this.passwordInput.value = "";
+        }
+    }
+
+    // Mientras no exista una pantalla dedicada, el cambio obligatorio se resuelve con un prompt sencillo.
+    promptPasswordChange(registro) {
+        return window.prompt(`Cambio obligatorio de contraseña para ${registro}. Ingresa tu nueva contraseña:`);
     }
 
     updateKeypadDisplay(value) {

@@ -32,8 +32,8 @@ const {
   handleUpdateUserPassword,
 } = require("./controllers/userController");
 const { initDatabase, loadEnvironment } = require("./models/databaseModel");
-const { ensureSystemAdministrator } = require("./models/userModel");
-const { hashPassword } = require("./services/userService");
+const { ensurePendingTeachersGenericPassword, ensureSystemAdministrator } = require("./models/userModel");
+const { hashPassword, TEMPORARY_PASSWORD, verifyPassword } = require("./services/userService");
 const { sendJson } = require("./views/jsonView");
 const { sendFile } = require("./views/staticView");
 
@@ -80,6 +80,7 @@ async function ensureDatabase() {
 
   await initDatabase();
   await ensureSystemAdministrator(hashPassword);
+  await ensurePendingTeachersGenericPassword(hashPassword, verifyPassword, TEMPORARY_PASSWORD);
   databaseInitialized = true;
 }
 

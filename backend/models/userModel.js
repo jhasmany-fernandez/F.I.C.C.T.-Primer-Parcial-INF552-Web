@@ -1,6 +1,10 @@
+// MVC Model: estos helpers solo conocen persistencia sobre `usuarios`.
+// No manejan HTTP ni decisiones de interfaz; exponen operaciones de lectura
+// y escritura para que los servicios compongan los casos de uso.
 const { query } = require("./databaseModel");
 const { cleanValue } = require("../utils/valueUtils");
 
+// Administrador semilla usado cuando la tabla está vacía por completo.
 const SYSTEM_ADMIN = {
   apellido: "Sistema",
   ci: "0",
@@ -71,6 +75,39 @@ async function ensureSystemAdministrator(hashPassword) {
   );
 
   return inserted.rows[0];
+}
+
+// Mantiene alineado el primer acceso de docentes pendientes con la clave genérica del sistema.
+async function ensurePendingTeachersGenericPassword(hashPassword, verifyPassword, temporaryPassword) {
+  const result = await query(
+    `
+      SELECT id, hash_contrasena
+      FROM usuarios
+      WHERE rol = 'Docente' AND estado = 'Pendiente'
+    `
+  );
+
+  let updatedCount = 0;
+
+  for (const row of result.rows) {
+    if (verifyPassword(temporaryPassword, row.hash_contrasena)) {
+      continue;
+    }
+
+    await query(
+      `
+        UPDATE usuarios
+        SET
+          hash_contrasena = $1,
+          actualizado_en = NOW()
+        WHERE id = $2
+      `,
+      [hashPassword(temporaryPassword), row.id]
+    );
+    updatedCount += 1;
+  }
+
+  return updatedCount;
 }
 
 async function findUserForLogin(registro) {
@@ -157,6 +194,79 @@ async function findExistingUsersByRegistro(registros) {
   }, new Map());
 }
 
+// Las consultas reutilizables aceptan un cliente opcional para participar en transacciones del service.
+async function listRecentUsers(limit = 50, db = { query }) {
+  const normalizedLimit = Number.isInteger(limit) && limit > 0 ? limit : 50;
+  const result = await db.query(
+    `
+      SELECT id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
+      FROM usuarios
+      ORDER BY creado_en DESC
+      LIMIT $1
+    `,
+    [normalizedLimit]
+  );
+
+  return result.rows;
+}
+
+async function createUserRecord(user, passwordHash, db = { query }) {
+  const result = await db.query(
+    `
+      INSERT INTO usuarios (
+        ci,
+        registro,
+        nombre,
+        apellido,
+        correo,
+        hash_contrasena,
+        rol,
+        estado,
+        id_rostro_externo
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
+    `,
+    [
+      user.ci,
+      user.registro,
+      user.nombre,
+      user.apellido,
+      user.correo,
+      passwordHash,
+      user.rol,
+      user.estado,
+      user.registro,
+    ]
+  );
+
+  return result.rows[0] || null;
+}
+
+// Al actualizar contraseña se activa el usuario porque ya completó el primer ingreso obligatorio.
+async function updateUserPasswordByRegistro(registro, passwordHash, db = { query }) {
+  const normalizedRegistro = cleanValue(registro);
+  if (!normalizedRegistro) {
+    return null;
+  }
+
+  const result = await db.query(
+    `
+      UPDATE usuarios
+      SET
+        hash_contrasena = $1,
+        estado = 'Activo',
+        actualizado_en = NOW()
+      WHERE registro = $2
+      RETURNING id, ci, registro, nombre, apellido, correo, rol, estado, id_rostro_externo, creado_en
+    `,
+    [passwordHash, normalizedRegistro]
+  );
+
+  return result.rows[0] || null;
+}
+
+// En carga masiva se reutiliza el registro existente para no duplicar docentes y preservar relaciones.
 async function upsertImportedUser(importedUser, buildImportedUserPayload, hashPassword, db = { query }) {
   const validation = buildImportedUserPayload(importedUser);
 
@@ -262,10 +372,14 @@ async function upsertImportedUser(importedUser, buildImportedUserPayload, hashPa
 }
 
 module.exports = {
+  createUserRecord,
+  ensurePendingTeachersGenericPassword,
   SYSTEM_ADMIN,
   ensureSystemAdministrator,
   findExistingUsersByRegistro,
   findUserByRegistro,
   findUserForLogin,
+  listRecentUsers,
+  updateUserPasswordByRegistro,
   upsertImportedUser,
 };

@@ -60,6 +60,67 @@
                                 </article>
                             </div>
                         </div>
+
+                        <article class="lock-copy-card smart-access-card">
+                            <div class="smart-label-row">
+                                <span>Acceso por registro</span>
+                                <small id="cameraToggleState">OFF</small>
+                            </div>
+
+                            <form id="passwordLoginForm" class="smart-login-form">
+                                <label class="smart-field">
+                                    <span>Número de registro</span>
+                                    <input
+                                        class="smart-input"
+                                        type="text"
+                                        id="identifierInput"
+                                        placeholder="Ej. 300000012"
+                                        autocomplete="username"
+                                        required
+                                    >
+                                </label>
+
+                                <label class="smart-field">
+                                    <span>Contraseña</span>
+                                    <input
+                                        class="smart-input"
+                                        type="password"
+                                        id="passwordInput"
+                                        placeholder="Ingresa tu contraseña"
+                                        autocomplete="current-password"
+                                        required
+                                    >
+                                </label>
+
+                                <button type="submit" class="btn btn-primary smart-submit">Iniciar sesión</button>
+                            </form>
+
+                            <div class="smart-status-row">
+                                <span class="smart-status-dot"></span>
+                                <span id="cameraToggleLabel">Cámara desactivada</span>
+                                <small id="cameraToggleHint">Enciende la vista previa para validar el rostro.</small>
+                            </div>
+
+                            <div class="smart-camera-card">
+                                <div class="smart-camera-frame">
+                                    <div class="smart-camera-overlay" id="cameraOverlay">
+                                        <video id="cameraPreview" autoplay playsinline muted></video>
+                                        <div class="smart-camera-placeholder">Vista previa desactivada</div>
+                                    </div>
+                                </div>
+
+                                <div class="smart-action-grid">
+                                    <button type="button" class="btn btn-secondary" id="startCameraBtn">Activar cámara</button>
+                                    <button type="button" class="btn btn-primary" id="faceLoginBtn">Validar rostro</button>
+                                    <button type="button" class="btn btn-secondary" id="captureOnlyBtn">Captura de prueba</button>
+                                </div>
+                            </div>
+
+                            <div class="keypad-helper">
+                                <strong>Primer ingreso docente</strong>
+                                <p>Si tu cuenta está en estado pendiente, inicia con tu registro y la clave genérica asignada. El sistema pedirá cambiarla antes de entrar.</p>
+                            </div>
+                        </article>
                     </div>
 
                     <div class="smart-lock-showcase">

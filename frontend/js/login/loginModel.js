@@ -1,3 +1,5 @@
+// MVC Model: mantiene el estado efímero del login y centraliza
+// todas las llamadas al backend que usa el controller.
 export class LoginModel {
     constructor() {
         this.currentStream = null;
@@ -7,6 +9,7 @@ export class LoginModel {
             : window.location.origin;
     }
 
+    // Mantiene configurable la base URL para web local, Docker y despliegues externos.
     buildApiUrl(path) {
         return `${this.apiBaseUrl}${path}`;
     }
@@ -48,6 +51,32 @@ export class LoginModel {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        return { response, result };
+    }
+
+    async sendPasswordLogin(payload) {
+        const response = await fetch(this.buildApiUrl("/api/login"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        return { response, result };
+    }
+
+    async updatePassword(registro, password) {
+        const response = await fetch(this.buildApiUrl("/api/users/update-password"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ registro, password })
         });
 
         const result = await response.json();

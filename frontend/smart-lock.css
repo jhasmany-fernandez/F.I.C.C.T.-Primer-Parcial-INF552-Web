@@ -681,6 +681,11 @@ body {
     margin-top: 24px;
 }
 
+.smart-access-card {
+    display: grid;
+    gap: 18px;
+}
+
 .keypad-helper {
     margin-top: 18px;
     padding: 16px 18px;
@@ -779,6 +784,39 @@ body {
     overflow: hidden;
     background: linear-gradient(180deg, #09111f, #0e1b30);
     min-height: 220px;
+}
+
+.smart-camera-overlay {
+    position: relative;
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+}
+
+.smart-camera-overlay video {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: none;
+}
+
+.smart-camera-overlay.is-active video {
+    display: block;
+}
+
+.smart-camera-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    text-align: center;
+    color: rgba(234, 243, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+.smart-camera-overlay.is-active .smart-camera-placeholder {
+    display: none;
 }
 
 .smart-action-grid {

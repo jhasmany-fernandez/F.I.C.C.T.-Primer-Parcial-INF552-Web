@@ -1,3 +1,6 @@
+// MVC Controller: coordina la vista de login con el modelo de datos.
+// Aquí se decide qué flujo de autenticación ejecutar y cuándo cambiar
+// el estado visual o la sesión del navegador.
 export class LoginController {
     constructor(model, view) {
         this.model = model;
@@ -29,6 +32,7 @@ export class LoginController {
         this.startSmartLocksStatusPolling();
     }
 
+    // Este polling conecta la autorización biométrica de la app/chapa con esta vista web.
     startBiometricStatusPolling() {
         const checkBiometricStatus = async () => {
             if (this.biometricAccessHandled) {
@@ -268,6 +272,7 @@ export class LoginController {
         }
     }
 
+    // El watchdog evita que el teclado quede bloqueado si la validación PIN tarda demasiado.
     async submitKeypadCode() {
         if (this.isValidatingPin) {
             return;
@@ -327,13 +332,90 @@ export class LoginController {
         }
     }
 
-    handlePasswordLogin(event) {
-        event.preventDefault();
+    // Centraliza la sesión web para que login normal y cambio obligatorio escriban el mismo formato.
+    completePasswordSession(user, reason = "password_login") {
+        if (user) {
+            window.setSmartAccessCurrentUser?.(user);
+        }
+
         window.setWebSessionState?.(true, {
-            method: "password-demo",
-            reason: "password_login",
+            method: "password",
+            reason,
+            registro: user?.registro || this.view.getIdentifier() || null,
+            role: user?.rol || null,
+            userId: user?.id || null,
+            userName: user ? `${user.nombre} ${user.apellido}`.trim() : null,
         });
-        this.view.setFeedback("info", "Acceso por contraseña habilitado", "Entrando al dashboard sin validación de credenciales en esta versión de prueba.");
+    }
+
+    // Primer acceso docente: cambia la clave temporal y vuelve a autenticar al usuario con la nueva contraseña.
+    async handleMandatoryPasswordChange(registro, message) {
+        this.view.setFeedback("warning", "Cambio obligatorio de contraseña", message || "Debes actualizar tu clave antes de continuar.");
+
+        const nextPassword = this.view.promptPasswordChange(registro);
+        if (nextPassword === null) {
+            this.view.setFeedback("warning", "Cambio pendiente", "Debes cambiar tu contraseña para ingresar al sistema.");
+            return;
+        }
+
+        const normalizedPassword = nextPassword.trim();
+        if (normalizedPassword.length < 8) {
+            this.view.setFeedback("warning", "Contraseña no válida", "La nueva contraseña debe tener al menos 8 caracteres.");
+            return;
+        }
+
+        this.view.setFeedback("info", "Actualizando contraseña", "Guardando la nueva contraseña en el backend.");
+
+        const updateResponse = await this.model.updatePassword(registro, normalizedPassword);
+        if (!updateResponse.response.ok) {
+            throw new Error(updateResponse.result.error || updateResponse.result.message || "No se pudo actualizar la contraseña.");
+        }
+
+        const loginResponse = await this.model.sendPasswordLogin({
+            registro,
+            password: normalizedPassword
+        });
+        if (!loginResponse.response.ok) {
+            throw new Error(loginResponse.result.error || loginResponse.result.message || "La nueva contraseña fue guardada, pero no se pudo completar el inicio de sesión.");
+        }
+
+        this.view.clearPassword();
+        this.completePasswordSession(loginResponse.result.user, "password_reset");
+        this.view.setFeedback(null, "Contraseña actualizada", updateResponse.result.message || "La contraseña fue actualizada correctamente.");
         this.view.redirectWithPasswordLogin();
+    }
+
+    // El backend define si este login entra directo o si debe detenerse para cambio obligatorio de contraseña.
+    async handlePasswordLogin(event) {
+        event.preventDefault();
+        const registro = this.view.getIdentifier();
+        const password = this.view.getPassword();
+
+        if (!registro || !password) {
+            this.view.setFeedback("warning", "Datos incompletos", "Ingresa tu número de registro y tu contraseña para continuar.");
+            return;
+        }
+
+        this.view.setFeedback("info", "Validando credenciales", "Consultando el backend para iniciar sesión.");
+
+        try {
+            const { response, result } = await this.model.sendPasswordLogin({ registro, password });
+
+            if (!response.ok) {
+                throw new Error(result.error || result.message || "No se pudo completar el inicio de sesión.");
+            }
+
+            if (result.requirePasswordReset) {
+                await this.handleMandatoryPasswordChange(registro, result.message);
+                return;
+            }
+
+            this.completePasswordSession(result.user, "password_login");
+            this.view.clearPassword();
+            this.view.setFeedback(null, "Acceso concedido", result.message || "Inicio de sesión correcto.");
+            this.view.redirectWithPasswordLogin();
+        } catch (error) {
+            this.view.setFeedback("error", "Acceso denegado", error.message || "No se pudo validar tus credenciales.");
+        }
     }
 }

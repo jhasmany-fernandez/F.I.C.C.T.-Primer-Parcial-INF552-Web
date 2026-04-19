@@ -57,6 +57,12 @@ export class AdminView {
         this.feedbackMessage.textContent = message;
     }
 
+    setPendingImportCount(count) {
+        if (this.pendingImportCount) {
+            this.pendingImportCount.textContent = String(count);
+        }
+    }
+
     setHealthState(health) {
         const dbAvailable = Boolean(health?.database?.connected);
         document.getElementById("adminStatusText").textContent = dbAvailable
@@ -101,7 +107,7 @@ export class AdminView {
     }
 
     renderImportedUsers(users) {
-        this.pendingImportCount.textContent = String(users.length);
+        this.setPendingImportCount(users.length);
         this.usersGridCount.textContent = `${users.length} fila${users.length === 1 ? "" : "s"}`;
 
         if (!users.length) {

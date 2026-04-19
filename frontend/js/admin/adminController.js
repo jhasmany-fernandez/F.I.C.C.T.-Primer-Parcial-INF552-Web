@@ -59,7 +59,7 @@ export class AdminController {
             this.view.setHealthState(health);
             this.view.renderUsers(users);
             this.view.renderAccessLogs(logs);
-            this.view.pendingImportCount.textContent = String(this.pendingImportedUsers.length);
+            this.view.setPendingImportCount(this.pendingImportedUsers.length);
         } catch (error) {
             this.view.showFeedback("error", "No se pudo cargar el panel", error.message || "Error al cargar datos administrativos.");
         }
@@ -74,7 +74,10 @@ export class AdminController {
                 throw new Error(result.error || result.message || "No se pudo registrar el usuario.");
             }
             this.view.resetForm();
-            this.view.showFeedback(null, "Usuario registrado", `La cuenta ${result.user?.registro || payload.registro} fue creada correctamente.`);
+            const credentialMessage = result.temporaryPasswordHint
+                ? ` La clave genérica asignada es ${result.temporaryPasswordHint}.`
+                : "";
+            this.view.showFeedback(null, "Usuario registrado", `La cuenta ${result.user?.registro || payload.registro} fue creada correctamente.${credentialMessage}`);
             await this.reloadData();
         } catch (error) {
             this.view.showFeedback("error", "No se pudo registrar el usuario", error.message);
@@ -139,7 +142,7 @@ export class AdminController {
                 throw new Error(result.error || result.message || "No se pudieron guardar los usuarios importados.");
             }
             this.pendingImportedUsers = [];
-            this.view.pendingImportCount.textContent = "0";
+            this.view.setPendingImportCount(0);
             this.view.showFeedback(null, "Datos guardados correctamente", `Se guardaron ${result.created || 0} nuevos y se omitieron ${result.skipped || 0} registros ya existentes.`);
             await this.reloadData();
         } catch (error) {

@@ -5,7 +5,15 @@ const {
   normalizeHeader,
 } = require("../utils/valueUtils");
 
-const TEMPORARY_PASSWORD = "123ppp---";
+const TEMPORARY_PASSWORD = "ficct123*";
+const SCHEDULE_DAY_FIELDS = [
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+];
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -35,6 +43,10 @@ function verifyPassword(password, passwordHash) {
 
 function isTemporaryPassword(password) {
   return password === TEMPORARY_PASSWORD;
+}
+
+function usesPendingTeacherPassword(user = {}) {
+  return cleanValue(user.rol) === "Docente" && (cleanValue(user.estado) || "Pendiente") === "Pendiente";
 }
 
 function inferRoleFromSheetName(sheetName) {
@@ -135,17 +147,57 @@ function mapExcelUserRows(rows, sheetName) {
     .filter((row) => row.nombre || row.apellido || row.registro || row.correo || row.sigla || row.materia);
 }
 
+function buildImportedAcademicPayload(payload) {
+  const academic = {
+    grupo: cleanValue(payload.grupo),
+    materia: cleanValue(payload.materia),
+    sigla: cleanValue(payload.sigla),
+  };
+
+  for (const field of SCHEDULE_DAY_FIELDS) {
+    academic[field] = cleanValue(payload[field]);
+  }
+
+  const hasCoreAcademicInfo = Boolean(academic.sigla || academic.grupo || academic.materia);
+  const hasSchedule = SCHEDULE_DAY_FIELDS.some((field) => academic[field]);
+  const hasAnyAcademicInfo = hasCoreAcademicInfo || hasSchedule;
+
+  if (!hasAnyAcademicInfo) {
+    return {
+      academic: null,
+      warning: null,
+    };
+  }
+
+  if (!academic.sigla || !academic.grupo || !academic.materia) {
+    return {
+      academic: null,
+      warning: "La fila académica debe incluir sigla, grupo y materia para guardarse.",
+    };
+  }
+
+  return {
+    academic: {
+      ...academic,
+      hasSchedule,
+    },
+    warning: hasSchedule
+      ? null
+      : "La fila académica no tiene horarios cargados; se omitirá la tabla horarios.",
+  };
+}
+
 function validateUserPayload(payload) {
   const user = {
     apellido: cleanValue(payload.apellido),
     ci: cleanValue(payload.ci),
     correo: normalizeEmail(payload.correo),
-    estado: cleanValue(payload.estado) || "Activo",
+    estado: cleanValue(payload.estado) || "Pendiente",
     nombre: cleanValue(payload.nombre),
-    password: TEMPORARY_PASSWORD,
     registro: cleanValue(payload.registro),
     rol: cleanValue(payload.rol),
   };
+  const providedPassword = typeof payload.password === "string" ? payload.password.trim() : "";
 
   if (!user.ci || !user.registro || !user.nombre || !user.apellido || !user.correo || !user.rol) {
     return { error: "Todos los campos obligatorios deben completarse." };
@@ -159,7 +211,16 @@ function validateUserPayload(payload) {
     return { error: "El estado indicado no es válido." };
   }
 
-  user.estado = "Pendiente";
+  if (usesPendingTeacherPassword(user)) {
+    user.password = TEMPORARY_PASSWORD;
+    return { user };
+  }
+
+  if (!providedPassword) {
+    return { error: "Debes asignar una contraseña inicial para este usuario." };
+  }
+
+  user.password = providedPassword;
 
   return { user };
 }
@@ -209,7 +270,7 @@ function buildImportedUserPayload(payload) {
       estado: ["Activo", "Inactivo", "Pendiente"].includes(estado) ? estado : "Pendiente",
       faceExternalId: registro,
       nombre,
-      password: TEMPORARY_PASSWORD,
+      password: usesPendingTeacherPassword({ rol, estado }) ? TEMPORARY_PASSWORD : (cleanValue(payload.password) || TEMPORARY_PASSWORD),
       registro,
       rol,
     },
@@ -217,12 +278,14 @@ function buildImportedUserPayload(payload) {
 }
 
 module.exports = {
+  buildImportedAcademicPayload,
   buildImportedUserPayload,
   hashPassword,
   isTemporaryPassword,
   mapExcelUserRows,
   splitFullName,
   TEMPORARY_PASSWORD,
+  usesPendingTeacherPassword,
   verifyPassword,
   validatePasswordUpdatePayload,
   validateUserPayload,
