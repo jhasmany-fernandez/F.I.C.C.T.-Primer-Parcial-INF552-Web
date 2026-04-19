@@ -39,7 +39,7 @@ function getPool() {
     const port = Number(process.env.DB_PORT || 5432);
     const database = process.env.POSTGRES_DB || "smart_access";
     const user = process.env.POSTGRES_USER || "postgres";
-    const password = process.env.POSTGRES_PASSWORD || "postgres";
+    const password = process.env.POSTGRES_PASSWORD || "smart_access_local_2026";
 
     pool = new Pool({
       database,

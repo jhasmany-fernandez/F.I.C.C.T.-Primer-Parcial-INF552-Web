@@ -45,6 +45,7 @@ const FRONTEND_DIR = path.resolve(__dirname, "../frontend");
 const FRONTEND_ASSET_EXTENSIONS = new Set([
   ".css",
   ".gif",
+  ".html",
   ".ico",
   ".jpeg",
   ".jpg",
